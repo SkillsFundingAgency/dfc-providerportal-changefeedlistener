@@ -1,0 +1,6 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/Dfc.ProviderPortal.ChangeFeedListener/v16
+/.vs/Dfc.ProviderPortal.ChangeFeedListener/DesignTimeBuild
