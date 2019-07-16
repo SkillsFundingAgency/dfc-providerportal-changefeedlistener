@@ -2,5 +2,32 @@
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+      "functionAppPrefix": {
+        "value": "__functionAppPrefix__"
+      },
+      "appServicePlanName": {
+        "value": "__providerPortalAppServicePlan__"
+      },
+      "appServicePlanResourceGroup": {
+        "value": "__providerPortalResourceGroup__"
+      },
+      "storageConnectionString": {
+        "value": "__providerPortalStorageConnectionStr__"
+      },
+      "ApimServiceName": {
+        "value": "__apimServiceName__"
+      },
+      "apimResourceGroup": {
+        "value": "__sharedResourceGroup__"
+      },
+      "ApiName": {
+        "value": "__apiName__"
+      },
+      "apiProductDisplayName": {
+        "value": "__apiProductDisplayName__"
+      },
+      "apiSuffix": {
+        "value": "__apiSuffix__"
+      }
     }
   }
