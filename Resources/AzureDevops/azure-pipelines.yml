@@ -18,11 +18,13 @@ trigger:
   branches:
     include:
     - master
+    - dev
 
 pr:
   branches:
     include:
     - master
+    - dev
 
 steps:
 
