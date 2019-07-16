@@ -18,11 +18,13 @@ trigger:
   branches:
     include:
     - master
+    - dev
 
 pr:
   branches:
     include:
     - master
+    - dev
 
 steps:
 
@@ -49,6 +51,7 @@ steps:
 # test and publish
 - task: DotNetCoreCLI@2
   displayName: dotnet test
+  continueOnError: true
   inputs:
     command: test
     projects: '**/*.csproj'
@@ -68,7 +71,7 @@ steps:
 - task: CopyFiles@2
   displayName: 'Copy Azure folder to Staging'
   inputs:
-    SourceFolder: $(System.DefaultWorkingDirectory)\Resources\Azure
+    SourceFolder: $(System.DefaultWorkingDirectory)\Resources\ArmTemplates
     TargetFolder: $(build.artifactstagingdirectory)\Azure\Azure
 
 - task: PublishBuildArtifacts@1
