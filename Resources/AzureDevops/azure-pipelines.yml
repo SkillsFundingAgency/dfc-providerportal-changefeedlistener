@@ -51,6 +51,7 @@ steps:
 # test and publish
 - task: DotNetCoreCLI@2
   displayName: dotnet test
+  continueOnError: true
   inputs:
     command: test
     projects: '**/*.csproj'
