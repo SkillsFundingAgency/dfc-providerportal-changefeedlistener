@@ -63,7 +63,7 @@
   "resources": [
     {
       "apiVersion": "2017-05-10",
-      "name": "pprefdataAppInsights",
+      "name": "ppcflAppInsights",
       "type": "Microsoft.Resources/deployments",
       "properties": {
         "mode": "Incremental",
@@ -83,10 +83,10 @@
     },
     {
       "apiVersion": "2017-05-10",
-      "name": "pprefdataAppService",
+      "name": "ppcflAppService",
       "type": "Microsoft.Resources/deployments",
       "dependsOn": [
-        "pprefdataAppInsights"
+        "ppcflAppInsights"
       ],
       "properties": {
         "mode": "Incremental",
@@ -111,7 +111,7 @@
             "value": [
               {
                 "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                "value": "[reference('pprefdataAppInsights').outputs.InstrumentationKey.value]"
+                "value": "[reference('ppcflAppInsights').outputs.InstrumentationKey.value]"
               },
               {
                 "name": "FUNCTIONS_EXTENSION_VERSION",
@@ -130,7 +130,7 @@
       }
     },
     {
-      "name": "pprefdataApimProduct",
+      "name": "ppcflApimProduct",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2017-05-10",
       "resourceGroup": "[parameters('ApimResourceGroup')]",
@@ -154,12 +154,12 @@
       }
     },
     {
-      "name": "pprefdataApimApi",
+      "name": "ppcflApimApi",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2017-05-10",
       "resourceGroup": "[parameters('ApimResourceGroup')]",
       "dependsOn": [
-        "pprefdataApimProduct"
+        "ppcflApimProduct"
       ],
       "properties": {
         "mode": "Incremental",
@@ -169,7 +169,7 @@
         },
         "parameters": {
           "apimProductInstanceName": {
-            "value": "[reference('pprefdataApimProduct').outputs.ApimProductInstanceName.value]"
+            "value": "[reference('ppcflApimProduct').outputs.ApimProductInstanceName.value]"
           },
           "apimServiceName": {
             "value": "[parameters('ApimServiceName')]"
@@ -195,7 +195,7 @@
     },
     "appInsightInstrumentationKey": {
       "type": "string",
-      "value": "[reference('pprefdataAppInsights').outputs.InstrumentationKey.value]"
+      "value": "[reference('ppcflAppInsights').outputs.InstrumentationKey.value]"
     }
   } 
 }
