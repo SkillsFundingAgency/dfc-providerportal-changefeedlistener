@@ -55,6 +55,15 @@
       },
       "cosmosDbCoursesCollectionName": {
         "value": "__cosmosDbCoursesCollectionName__"
+      },
+      "cosmosDbCoursesMigrationReportLeaseCollectionName": { 
+        "value": "__cosmosDbCoursesMigrationReportLeaseCollectionName__"
+      },
+      "cosmosDbCoursesMigrationReportCollectionName": {
+        "value": "__cosmosDbCoursesMigrationReportCollectionName__"
+      },
+      "cosmosDbCoursesMigrationReportChangeFeedPrefix": {
+        "value": "__cosmosDbCoursesMigrationReportChangeFeedPrefix__"
       }
     }
   }

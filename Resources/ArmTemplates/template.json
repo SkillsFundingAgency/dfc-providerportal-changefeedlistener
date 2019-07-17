@@ -107,7 +107,25 @@
       "metadata": {
         "description": "The name of the Courses  collection (app setting)"
       }
-    }
+    },
+    "cosmosDbCoursesMigrationReportLeaseCollectionName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the courses migration report lease collection (app setting)"
+      }
+    },
+    "cosmosDbCoursesMigrationReportCollectionName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the courses migration report collection (app setting)"
+      }
+    },
+    "cosmosDbCoursesMigrationReportChangeFeedPrefix": {
+      "type": "string",
+      "metadata": {
+        "description": "The prefix of the migration report chane feed (app setting)"
+      }
+    }  
   },
   "variables": {
     "deploymentUrlBase": "https://raw.githubusercontent.com/SkillsFundingAgency/dfc-devops/master/ArmTemplates/",
@@ -210,6 +228,18 @@
               {
                 "name": "Values__CoursesCollectionId",
                 "value": "[parameters('cosmosDbCoursesCollectionName')]"
+              },
+              {
+                "name": "Values__CoursesMigrationReportLeaseCollectionName",
+                "value": "[parameters('cosmosDbCoursesMigrationReportLeaseCollectionName')]"
+              },
+              {
+                "name": "Values__CoursesMigrationReportCollectionId",
+                "value": "[parameters('cosmosDbCoursesMigrationReportCollectionName')]"
+              },
+              {
+                "name": "Values__CoursesMigrationReportLeaseCollectionPrefix",
+                "value": "[parameters('cosmosDbCoursesMigrationReportChangeFeedPrefix')]"
               }
             ]
           },

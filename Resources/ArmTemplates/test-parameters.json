@@ -48,10 +48,19 @@
       "value": "CoursesLeaseCollection"
     },
     "cosmosdbCoursesLeaseCollectionPrefix": {
-      "value": "a prefix"
+      "value": "CoursesChangeFeedPrefix"
     },
     "cosmosDbCoursesCollectionName": {
       "value": "CoursesCollection"
+    },
+    "cosmosDbCoursesMigrationReportLeaseCollectionName": { 
+      "value": "CourseMigrationReportsLease"
+    },
+    "cosmosDbCoursesMigrationReportCollectionName": {
+      "value": "CourseMigrationReports"
+    },
+    "cosmosDbCoursesMigrationReportChangeFeedPrefix": {
+      "value": "CourseMigrationReportChangeFeedPrefix"
     }
   }
 }
