@@ -208,7 +208,7 @@
                 "value": "[parameters('cosmosdbCoursesLeaseCollectionPrefix')]"
               },
               {
-                "name": "Values_CoursesCollectionId",
+                "name": "Values__CoursesCollectionId",
                 "value": "[parameters('cosmosDbCoursesCollectionName')]"
               }
             ]
