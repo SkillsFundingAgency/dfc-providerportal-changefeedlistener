@@ -25,6 +25,42 @@
     },
     "apiProductDisplayName": {
       "value": "Change feed listener"
+    },
+    "cosmosDbFqdn": {
+      "value": "https://dfc-foo-prov-cdb.documents.azure.com/"
+    },
+    "cosmsDbKey": {
+      "value": "not a real key"
+    },
+    "cosmosDbConnectionString": {
+      "value": "ADocumentDbConnectionString"
+    },
+    "cosmosDbDatabase": {
+      "value": "aDatabase"
+    },
+    "cosmosDbProviderCollectionName": {
+      "value": "providerportalCollection"
+    },
+    "cosmosDbDfcReportCollectionName": {
+      "value": "DfcReportCollection"
+    },
+    "cosmosDbCoursesLeaseCollectionName": {
+      "value": "CoursesLeaseCollection"
+    },
+    "cosmosdbCoursesLeaseCollectionPrefix": {
+      "value": "CoursesChangeFeedPrefix"
+    },
+    "cosmosDbCoursesCollectionName": {
+      "value": "CoursesCollection"
+    },
+    "cosmosDbCoursesMigrationReportLeaseCollectionName": { 
+      "value": "CourseMigrationReportsLease"
+    },
+    "cosmosDbCoursesMigrationReportCollectionName": {
+      "value": "CourseMigrationReports"
+    },
+    "cosmosDbCoursesMigrationReportChangeFeedPrefix": {
+      "value": "CourseMigrationReportChangeFeedPrefix"
     }
   }
 }

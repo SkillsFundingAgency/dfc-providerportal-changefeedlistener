@@ -53,7 +53,79 @@
       "metadata": {
         "description": "Suffix uniquely identifying this API and all of its resource paths within APIM, defaults to apiName"
       }
-    }
+    },
+    "cosmosDbFqdn": {
+      "type": "string",
+      "metadata": {
+        "description": "The URL of the cosmosdb account (app setting)"
+      }
+    },
+    "cosmsDbKey": {
+      "type": "string",
+      "metadata": {
+        "description": "The primary key for the cosmosdb account (app setting)"
+      }
+    },
+    "cosmosDbConnectionString": {
+      "type": "string",
+      "metadata": {
+        "description": "The connection string to the cosmosdb account (app setting)"
+      }
+    },
+    "cosmosDbDatabase": {
+      "type": "string",
+      "metadata": { 
+        "description": "The name of the cosmosdb database (app setting)"
+      }
+    },
+    "cosmosDbProviderCollectionName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the provider collection (app setting)"
+      }
+    },
+    "cosmosDbDfcReportCollectionName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the DfcReport collection (app setting)"
+      }
+    },
+    "cosmosDbCoursesLeaseCollectionName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Course Lease collection (app setting)"
+      }
+    },
+    "cosmosdbCoursesLeaseCollectionPrefix":{
+      "type": "string",
+      "metadata": {
+        "description": "The prefix of the Course Lease collection (app setting)"
+      }
+    },
+    "cosmosDbCoursesCollectionName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Courses  collection (app setting)"
+      }
+    },
+    "cosmosDbCoursesMigrationReportLeaseCollectionName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the courses migration report lease collection (app setting)"
+      }
+    },
+    "cosmosDbCoursesMigrationReportCollectionName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the courses migration report collection (app setting)"
+      }
+    },
+    "cosmosDbCoursesMigrationReportChangeFeedPrefix": {
+      "type": "string",
+      "metadata": {
+        "description": "The prefix of the migration report chane feed (app setting)"
+      }
+    }  
   },
   "variables": {
     "deploymentUrlBase": "https://raw.githubusercontent.com/SkillsFundingAgency/dfc-devops/master/ArmTemplates/",
@@ -120,6 +192,54 @@
               {
                 "name": "AzureWebJobsStorage",
                 "value": "[parameters('storageConnectionString')]"
+              },
+              {
+                "name": "Values__EndpointUri",
+                "value": "[parameters('cosmosDbFqdn')]"
+              },
+              {
+                "name": "Values__PrimaryKey",
+                "value": "[parameters('cosmsDbKey')]"
+              },
+              {
+                "name": "Values__CosmosDatabaseId",
+                "value": "[parameters('cosmosDbDatabase')]"
+              },
+              {
+                "name": "Values__CosmosDbConnectionString",
+                "value": "[parameters('cosmosDbConnectionString')]"
+              },
+              {
+                "name": "Values__ProviderCollectionId",
+                "value": "[parameters('cosmosDbProviderCollectionName')]"
+              },
+              {
+                "name": "Values__DfcReportCollectionId",
+                "value": "[parameters('cosmosDbDfcReportCollectionName')]"
+              },
+              {
+                "name": "Values__CoursesLeaseCollectionName",
+                "value": "[parameters('cosmosDbCoursesLeaseCollectionName')]"
+              },
+              {
+                "name": "Values__CoursesLeaseCollectionPrefix",
+                "value": "[parameters('cosmosdbCoursesLeaseCollectionPrefix')]"
+              },
+              {
+                "name": "Values__CoursesCollectionId",
+                "value": "[parameters('cosmosDbCoursesCollectionName')]"
+              },
+              {
+                "name": "Values__CoursesMigrationReportLeaseCollectionName",
+                "value": "[parameters('cosmosDbCoursesMigrationReportLeaseCollectionName')]"
+              },
+              {
+                "name": "Values__CoursesMigrationReportCollectionId",
+                "value": "[parameters('cosmosDbCoursesMigrationReportCollectionName')]"
+              },
+              {
+                "name": "Values__CoursesMigrationReportLeaseCollectionPrefix",
+                "value": "[parameters('cosmosDbCoursesMigrationReportChangeFeedPrefix')]"
               }
             ]
           },
