@@ -28,6 +28,42 @@
       },
       "apiSuffix": {
         "value": "__apiSuffix__"
+      },
+      "cosmosDbFqdn": {
+        "value": "__providerPortalCosmosDbFqdn__"
+      },
+      "cosmsDbKey": {
+        "value": "__providerPortalCosmosDBPrimaryKey__"
+      },
+      "cosmosDbConnectionString": {
+        "value": "__providerPortalCosmosDbConnectionString__"
+      },
+      "cosmosDbDatabase": {
+        "value": "__providerPortalCosmosDbAccDatabaseName__"
+      },
+      "cosmosDbProviderCollectionName": {
+        "value": "__cosmosDbProviderCollectionName__"
+      },
+      "cosmosDbDfcReportCollectionName": {
+        "value": "__cosmosDbDfcReportCollectionName__"
+      },
+      "cosmosDbCoursesLeaseCollectionName": {
+        "value": "__cosmosDbCourseLeaseCollectionName__"
+      },
+      "cosmosdbCoursesLeaseCollectionPrefix": {
+        "value": "__cosmosDbCourseLeaseCollectionPrefix__"
+      },
+      "cosmosDbCoursesCollectionName": {
+        "value": "__cosmosDbCoursesCollectionName__"
+      },
+      "cosmosDbCoursesMigrationReportLeaseCollectionName": { 
+        "value": "__cosmosDbCoursesMigrationReportLeaseCollectionName__"
+      },
+      "cosmosDbCoursesMigrationReportCollectionName": {
+        "value": "__cosmosDbCoursesMigrationReportCollectionName__"
+      },
+      "cosmosDbCoursesMigrationReportChangeFeedPrefix": {
+        "value": "__cosmosDbCoursesMigrationReportChangeFeedPrefix__"
       }
     }
   }
