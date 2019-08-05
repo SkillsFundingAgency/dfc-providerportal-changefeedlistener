@@ -194,51 +194,51 @@
                 "value": "[parameters('storageConnectionString')]"
               },
               {
-                "name": "Values__EndpointUri",
+                "name": "EndpointUri",
                 "value": "[parameters('cosmosDbFqdn')]"
               },
               {
-                "name": "Values__PrimaryKey",
+                "name": "PrimaryKey",
                 "value": "[parameters('cosmsDbKey')]"
               },
               {
-                "name": "Values__CosmosDatabaseId",
+                "name": "CosmosDatabaseId",
                 "value": "[parameters('cosmosDbDatabase')]"
               },
               {
-                "name": "Values__CosmosDbConnectionString",
+                "name": "CosmosDbConnectionString",
                 "value": "[parameters('cosmosDbConnectionString')]"
               },
               {
-                "name": "Values__ProviderCollectionId",
+                "name": "ProviderCollectionId",
                 "value": "[parameters('cosmosDbProviderCollectionName')]"
               },
               {
-                "name": "Values__DfcReportCollectionId",
+                "name": "DfcReportCollectionId",
                 "value": "[parameters('cosmosDbDfcReportCollectionName')]"
               },
               {
-                "name": "Values__CoursesLeaseCollectionName",
+                "name": "CoursesLeaseCollectionName",
                 "value": "[parameters('cosmosDbCoursesLeaseCollectionName')]"
               },
               {
-                "name": "Values__CoursesLeaseCollectionPrefix",
+                "name": "CoursesLeaseCollectionPrefix",
                 "value": "[parameters('cosmosdbCoursesLeaseCollectionPrefix')]"
               },
               {
-                "name": "Values__CoursesCollectionId",
+                "name": "CoursesCollectionId",
                 "value": "[parameters('cosmosDbCoursesCollectionName')]"
               },
               {
-                "name": "Values__CoursesMigrationReportLeaseCollectionName",
+                "name": "CoursesMigrationReportLeaseCollectionName",
                 "value": "[parameters('cosmosDbCoursesMigrationReportLeaseCollectionName')]"
               },
               {
-                "name": "Values__CoursesMigrationReportCollectionId",
+                "name": "CoursesMigrationReportCollectionId",
                 "value": "[parameters('cosmosDbCoursesMigrationReportCollectionName')]"
               },
               {
-                "name": "Values__CoursesMigrationReportLeaseCollectionPrefix",
+                "name": "CoursesMigrationReportLeaseCollectionPrefix",
                 "value": "[parameters('cosmosDbCoursesMigrationReportChangeFeedPrefix')]"
               }
             ]
