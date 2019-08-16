@@ -6,5 +6,6 @@
         public string CoursesCollectionId { get; set; }
         public string CoursesMigrationReportCollectionId { get; set; }
         public string DfcReportCollectionId { get; set; }
+        public string AuditCollectionId { get; set; }
     }
 }
