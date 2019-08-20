@@ -68,7 +68,7 @@
     "providerApiUrl": {
       "value": "https://api.instance/providers"
     },
-    "venueServiceUrl": {
+    "venueServiceApiUrl": {
       "value": "https://api.instance/venues"
     },
     "azureSearchName": {

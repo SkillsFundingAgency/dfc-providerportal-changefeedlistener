@@ -71,8 +71,8 @@
       "providerApiUrl": {
         "value": "__providerApiUrl__"
       },
-      "venueServiceUrl": {
-        "value": "__venueServiceUrl__"
+      "venueServiceApiUrl": {
+        "value": "__venueServiceApiUrl__"
       },
       "azureSearchName": {
         "value": "__azureSearchName__"
