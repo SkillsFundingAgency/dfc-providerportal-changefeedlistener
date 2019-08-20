@@ -335,11 +335,11 @@
               },
               {
                 "name": "SearchServiceSettings__RegionSearchBoost",
-                "value": "[[eg 2.3]"
+                "value": "[string('[eg 2.3]')]"
               },
               {
                 "name": "SearchServiceSettings__SubRegionSearchBoost",
-                "value": "[[eg 4.5]"
+                "value": "[string('[eg 4.5]')]"
               },
               {
                 "name": "VenueServiceSettings__ApiUrl",
