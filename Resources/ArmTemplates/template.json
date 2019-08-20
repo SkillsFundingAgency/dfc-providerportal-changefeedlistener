@@ -127,7 +127,7 @@
       }
     },
     "apimKey": {
-      "type": "string",
+      "type": "securestring",
       "metadata": {
         "description": "An APIM product subscription key"
       }
@@ -157,13 +157,13 @@
       }
     },
     "azureSearchQueryKey": {
-      "type": "string",
+      "type": "securestring",
       "metadata": {
         "description": "The API key for querying Azure Search"
       }
     },
     "azureSearchAdminKey": {
-      "type": "string",
+      "type": "securestring",
       "metadata": {
         "description": "The API key for administrative operations on Azure Search"
       }

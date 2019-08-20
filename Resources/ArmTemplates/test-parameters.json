@@ -75,10 +75,10 @@
       "value": "some-azure-search"
     },
     "azureSearchQueryKey": {
-      "value": "__azureSearchQueryKey__"
+      "value": "not-a-real-search-key"
     },
     "azureSearchAdminKey": {
-      "value": "__azureSearchQueryKey__"
+      "value": "not-a-real-search-key"
     },
     "courseSearchIndex": {
       "value": "course-index-name"
