@@ -61,6 +61,30 @@
     },
     "cosmosDbCoursesMigrationReportChangeFeedPrefix": {
       "value": "CourseMigrationReportChangeFeedPrefix"
+    },
+    "apimKey": {
+      "value": "not-a-real-api-management-key"
+    },
+    "providerApiUrl": {
+      "value": "https://api.instance/providers"
+    },
+    "venueServiceUrl": {
+      "value": "https://api.instance/venues"
+    },
+    "azureSearchName": {
+      "value": "some-azure-search"
+    },
+    "azureSearchQueryKey": {
+      "value": "__azureSearchQueryKey__"
+    },
+    "azureSearchAdminKey": {
+      "value": "__azureSearchQueryKey__"
+    },
+    "courseSearchIndex": {
+      "value": "course-index-name"
+    },
+    "onspdSearchIndex": {
+      "value": "onspd-index-name"
     }
   }
 }

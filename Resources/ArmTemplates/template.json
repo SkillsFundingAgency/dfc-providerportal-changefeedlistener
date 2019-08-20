@@ -125,7 +125,55 @@
       "metadata": {
         "description": "The prefix of the migration report chane feed (app setting)"
       }
-    }  
+    },
+    "apimKey": {
+      "type": "string",
+      "metadata": {
+        "description": "An APIM product subscription key"
+      }
+    },
+    "providerApiUrl": {
+      "type": "string",
+      "metadata": {
+        "description": "Url to the provider API"
+      }
+    },
+    "venueServiceApiUrl": {
+      "type": "string",
+      "metadata": {
+        "description": "Url to the vendues API"
+      }
+    },
+    "azureSearchName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the azure search service"
+      }
+    },
+    "courseSearchIndex": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the courses index within Azure Search"
+      }
+    },
+    "azureSearchQueryKey": {
+      "type": "string",
+      "metadata": {
+        "description": "The API key for querying Azure Search"
+      }
+    },
+    "azureSearchAdminKey": {
+      "type": "string",
+      "metadata": {
+        "description": "The API key for administrative operations on Azure Search"
+      }
+    },
+    "onspdSearchIndex": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the onspd index in Azure Search"
+      }
+    }
   },
   "variables": {
     "deploymentUrlBase": "https://raw.githubusercontent.com/SkillsFundingAgency/dfc-devops/master/ArmTemplates/",
@@ -240,7 +288,76 @@
               {
                 "name": "CoursesMigrationReportLeaseCollectionPrefix",
                 "value": "[parameters('cosmosDbCoursesMigrationReportChangeFeedPrefix')]"
+              },
+              {
+                "name": "AuditCollectionId",
+                "value": "audit"
+              },
+              {
+                "name": "SearchServiceSettings__SearchService",
+                "value": "[parameters('azureSearchName')]"
+              },
+              {
+                "name": "SearchServiceSettings__ApiUrl",
+                "value": "[concat('https://', parameters('azureSearchName'), '.search.windows.net/indexes/', parameters('courseSearchIndex'), '/docs/search')]"
+              },
+              {
+                "name": "SearchServiceSettings__ApiVersion",
+                "value": "11/11/2017"
+              },
+              {
+                "name": "SearchServiceSettings__QueryKey",
+                "value": "[parameters('azureSearchQueryKey')]"
+              },
+              {
+                "name": "SearchServiceSettings__AdminKey",
+                "value": "[parameters('azureSearchAdminKey')]"
+              },
+              {
+                "name": "SearchServiceSettings__Index",
+                "value": "[parameters('courseSearchIndex')]"
+              },
+              {
+                "name": "SearchServiceSettings__onspdIndex",
+                "value": "[parameters('onspdSearchIndex')]"
+              },
+              {
+                "name": "SearchServiceSettings__DefaultTop",
+                "value": "10"
+              },
+              {
+                "name": "SearchServiceSettings__CoursesConnectionString",
+                "value": "[parameters('cosmosDbConnectionString')]"
+              },
+              {
+                "name": "SearchServiceSettings__ThresholdVenueCount",
+                "value": "100"
+              },
+              {
+                "name": "SearchServiceSettings__RegionSearchBoost",
+                "value": "[[eg 2.3]]"
+              },
+              {
+                "name": "SearchServiceSettings__SubRegionSearchBoost",
+                "value": "[[eg 4.5]]"
+              },
+              {
+                "name": "VenueServiceSettings__ApiUrl",
+                "value": "[parameters('venueServiceApiUrl')]"
+              },
+              {
+                "name": "VenueServiceSettings__ApiKey",
+                "value": "[parameters('apimKey')]"
+              },
+              {
+                "name": "ProviderServiceSettings__ApiUrl",
+                "value": "[parameters('providerApiUrl')]"
+              },
+              {
+                "name": "ProviderServiceSettings__ApiKey",
+                "value": "[parameters('apimKey')]"
               }
+
             ]
           },
           "deployStagingSlot": {
