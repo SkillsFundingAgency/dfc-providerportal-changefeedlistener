@@ -178,9 +178,7 @@
   "variables": {
     "deploymentUrlBase": "https://raw.githubusercontent.com/SkillsFundingAgency/dfc-devops/master/ArmTemplates/",
     "functionAppName": "[concat(parameters('functionAppPrefix'),'-fa')]",
-    "appInsightName": "[concat(parameters('functionAppPrefix'),'-ai')]",
-    "leftBracket": "[[",
-    "rightBracket": "]"
+    "appInsightName": "[concat(parameters('functionAppPrefix'),'-ai')]"
   },
   "resources": [
     {
@@ -337,11 +335,11 @@
               },
               {
                 "name": "SearchServiceSettings__RegionSearchBoost",
-                "value": "[concat(variables('leftBracket'), string('eg 2.3'), variables('rightBracket'))]"
+                "value": "2.3"
               },
               {
                 "name": "SearchServiceSettings__SubRegionSearchBoost",
-                "value": "[concat(variables('leftBracket'), string('eg 4.5'), variables('rightBracket'))]"
+                "value": "4.5"
               },
               {
                 "name": "VenueServiceSettings__ApiUrl",
