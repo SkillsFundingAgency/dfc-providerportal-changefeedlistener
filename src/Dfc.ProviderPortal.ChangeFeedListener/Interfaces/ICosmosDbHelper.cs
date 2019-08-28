@@ -14,5 +14,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Interfaces
         Task<Provider> GetProviderByUKPRN(DocumentClient client, string collectionId, int UKPRN);
         Task<Document> UpdateDocumentAsync(DocumentClient client, string collectionId, object document);
         Task<IList<Provider>> GetOnboardedProviders(DocumentClient client, string collectionId);
+        Task<Document> CreateDocumentAsync(DocumentClient client, string collectionId, object document);
+        T DocumentTo<T>(Document document);
     }
 }

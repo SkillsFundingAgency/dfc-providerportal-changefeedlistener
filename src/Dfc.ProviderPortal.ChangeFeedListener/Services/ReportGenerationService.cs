@@ -1,13 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using Dfc.ProviderPortal.ChangeFeedListener.Interfaces;
-using Dfc.ProviderPortal.ChangeFeedListener.Settings;
 using System.Threading.Tasks;
+using Dfc.ProviderPortal.ChangeFeedListener.Interfaces;
 using Dfc.ProviderPortal.ChangeFeedListener.Models;
-using System;
+using Dfc.ProviderPortal.ChangeFeedListener.Settings;
 using Microsoft.Extensions.Logging;
 
-namespace Dfc.ProviderPortal.ChangeFeedListener
+namespace Dfc.ProviderPortal.ChangeFeedListener.Services
 {
     public class ReportGenerationService : IReportGenerationService
     {
@@ -84,8 +84,13 @@ namespace Dfc.ProviderPortal.ChangeFeedListener
                 {
                     await UpdateReport(int.Parse(provider.UnitedKingdomProviderReferenceNumber));
                 }
-                catch
+                catch(Exception ex)
                 {
+                    if (!ex.Message.Contains("Unable to generate report for Provider"))
+                    {
+
+                        var t = ex;
+                    }
                     log.LogWarning($"Unable to update Report for Provider{provider.UnitedKingdomProviderReferenceNumber}");
                 } 
             }

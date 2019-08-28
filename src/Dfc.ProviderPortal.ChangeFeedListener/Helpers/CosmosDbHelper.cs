@@ -117,5 +117,24 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
 
             return providers;
         }
+
+        public async Task<Document> CreateDocumentAsync(DocumentClient client, string collectionId, object document)
+        {
+            Throw.IfNull(client, nameof(client));
+            Throw.IfNullOrWhiteSpace(collectionId, nameof(collectionId));
+            Throw.IfNull(document, nameof(document));
+
+            var uri = UriFactory.CreateDocumentCollectionUri(
+                _settings.DatabaseId,
+                collectionId);
+
+            return await client.CreateDocumentAsync(uri, document);
+        }
+
+        public T DocumentTo<T>(Document document)
+        {
+            Throw.IfNull(document, nameof(document));
+            return (T)(dynamic)document;
+        }
     }
 }
