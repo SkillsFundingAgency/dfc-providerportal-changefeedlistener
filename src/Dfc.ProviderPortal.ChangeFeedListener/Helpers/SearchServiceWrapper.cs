@@ -84,55 +84,67 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
 
                     _log.LogInformation("Creating batch of course data to index");
 
-                    // Courses run in classrooms have an associated venue
+                    // Classroom courses have an associated venue
                     IEnumerable<LINQComboClass> classroom = from Course c in courses
-                                                            from CourseRun r in c.CourseRuns ?? new List<CourseRun>()
+                                                            from CourseRun r in c?.CourseRuns?.Where(x => x.DeliveryMode == DeliveryMode.ClassroomBased) ?? new List<CourseRun>()
                                                             from AzureSearchVenueModel v in venues.Where(x => r.VenueId == x.id)
                                                                                                   .DefaultIfEmpty()
                                                             select new LINQComboClass() { Course = c, Run = r, SubRegion = (SubRegionItemModel)null, Venue = v };
                     _log.LogInformation($"{classroom.Count()} classroom courses (with VenueId and no regions)");
 
 
-                    // Courses run elsewhere have regions instead (online, work-based, ...)
-                    IEnumerable<LINQComboClass> nonclassroom = from Course c in courses
-                                                               from CourseRun r in c.CourseRuns ?? new List<CourseRun>()
-                                                               from SubRegionItemModel subregion in r.SubRegions ?? new List<SubRegionItemModel>()
-                                                               select new LINQComboClass() { Course = c, Run = r, SubRegion = subregion, Venue = (AzureSearchVenueModel)null };
-                    _log.LogInformation($"{nonclassroom.Count()} other courses (with regions but no VenueId)");
+                    // Work-based courses have regions instead
+                    IEnumerable<LINQComboClass> workbased = from Course c in courses
+                                                            from CourseRun r in c?.CourseRuns?.Where(x => x.DeliveryMode == DeliveryMode.WorkBased) ?? new List<CourseRun>()
+                                                            from SubRegionItemModel subregion in r.SubRegions ?? new List<SubRegionItemModel>()
+                                                            select new LINQComboClass() { Course = c, Run = r, SubRegion = subregion, Venue = (AzureSearchVenueModel)null };
+                    _log.LogInformation($"{workbased.Count()} work-based courses (with regions but no VenueId)");
+
+
+                    // Online courses have neither
+                    IEnumerable<LINQComboClass> online = from Course c in courses
+                                                         from CourseRun r in c?.CourseRuns?.Where(x => x.DeliveryMode == DeliveryMode.Online) ?? new List<CourseRun>()
+                                                         select new LINQComboClass() { Course = c, Run = r, SubRegion = (SubRegionItemModel)null, Venue = (AzureSearchVenueModel)null };
+                    _log.LogInformation($"{online.Count()} online courses (with no region or VenueId)");
+
 
                     decimal regionBoost = _settings.RegionSearchBoost ?? 2.3M;
                     decimal subregionBoost = _settings.SubRegionSearchBoost ?? 4.5M;
 
-                    var batchdata = from LINQComboClass x in classroom.Union(nonclassroom)
-                                    join AzureSearchProviderModel p in providers
-                                    on x.Course?.ProviderUKPRN equals p.UnitedKingdomProviderReferenceNumber
-                                    where (x.Run?.RecordStatus != RecordStatus.Pending && (x.Venue != null || x.SubRegion != null))
-                                    select new AzureSearchCourse()
-                                    {
-                                        id = Guid.NewGuid(),
-                                        CourseId = x.Course?.id,
-                                        CourseRunId = x.Run?.id,
-                                        QualificationCourseTitle = x.Course?.QualificationCourseTitle,
-                                        LearnAimRef = x.Course?.LearnAimRef,
-                                        NotionalNVQLevelv2 = x.Course?.NotionalNVQLevelv2,
-                                        VenueName = x.Venue?.VENUE_NAME,
-                                        VenueAddress = string.Format("{0}{1}{2}{3}{4}",
-                                                       string.IsNullOrWhiteSpace(x.Venue?.ADDRESS_1) ? "" : x.Venue?.ADDRESS_1 + ", ",
-                                                       string.IsNullOrWhiteSpace(x.Venue?.ADDRESS_2) ? "" : x.Venue?.ADDRESS_2 + ", ",
-                                                       string.IsNullOrWhiteSpace(x.Venue?.TOWN) ? "" : x.Venue?.TOWN + ", ",
-                                                       string.IsNullOrWhiteSpace(x.Venue?.COUNTY) ? "" : x.Venue?.COUNTY + ", ",
-                                                       x.Venue?.POSTCODE),
-                                        VenueAttendancePattern = ((int)x.Run?.AttendancePattern).ToString(),
-                                        VenueLocation = GeographyPoint.Create(x.Venue?.Latitude ?? 0, x.Venue?.Longitude ?? 0),
-                                        ProviderName = p?.ProviderName,
-                                        Region = x.SubRegion?.SubRegionName,
-                                        Status = (int?)x.Run?.RecordStatus,
-                                        //Weighting = "",
-                                        ScoreBoost = (x.SubRegion == null || x.SubRegion?.Weighting == SearchResultWeightings.Low ? 1
-                                                        : (x.SubRegion?.Weighting == SearchResultWeightings.High ? subregionBoost : regionBoost)
-                                                     ),
-                                        UpdatedOn = x.Run?.UpdatedDate
-                                    };
+                    IEnumerable<AzureSearchCourse> batchdata = from LINQComboClass x in classroom.Union(workbased)
+                                                                                                 .Union(online)
+                                                               join AzureSearchProviderModel p in providers
+                                                               on x.Course?.ProviderUKPRN equals p.UnitedKingdomProviderReferenceNumber
+                                                               where (x.Run?.RecordStatus != RecordStatus.Pending && (x.Run?.DeliveryMode == DeliveryMode.Online || x.Venue != null || x.SubRegion != null))
+                                                               select new AzureSearchCourse()
+                                                               {
+                                                                   id = ((x.Run?.DeliveryMode == DeliveryMode.WorkBased && x.Run?.SubRegions?.Count() > 1)
+                                                                                ? Guid.NewGuid() 
+                                                                                : (x.Run?.id ?? Guid.NewGuid())
+                                                                        ),
+                                                                   CourseId = x.Course?.id,
+                                                                   CourseRunId = x.Run?.id,
+                                                                   QualificationCourseTitle = x.Course?.QualificationCourseTitle,
+                                                                   LearnAimRef = x.Course?.LearnAimRef,
+                                                                   NotionalNVQLevelv2 = x.Course?.NotionalNVQLevelv2,
+                                                                   VenueName = x.Venue?.VENUE_NAME ?? "",
+                                                                   VenueAddress = string.Format("{0}{1}{2}{3}{4}",
+                                                                                  string.IsNullOrWhiteSpace(x.Venue?.ADDRESS_1) ? "" : x.Venue?.ADDRESS_1 + ", ",
+                                                                                  string.IsNullOrWhiteSpace(x.Venue?.ADDRESS_2) ? "" : x.Venue?.ADDRESS_2 + ", ",
+                                                                                  string.IsNullOrWhiteSpace(x.Venue?.TOWN) ? "" : x.Venue?.TOWN + ", ",
+                                                                                  string.IsNullOrWhiteSpace(x.Venue?.COUNTY) ? "" : x.Venue?.COUNTY + ", ",
+                                                                                  x.Venue?.POSTCODE) ?? "",
+                                                                   VenueAttendancePattern = ((int)x.Run?.AttendancePattern).ToString(),
+                                                                   VenueLocation = GeographyPoint.Create(x.Venue?.Latitude ?? 0, x.Venue?.Longitude ?? 0),
+                                                                   ProviderName = p?.ProviderName,
+                                                                   Region = x.SubRegion?.SubRegionName ?? "",
+                                                                   Status = (int?)x.Run?.RecordStatus,
+                                                                   //Weighting = "",
+                                                                   ScoreBoost = (x.SubRegion == null || x.SubRegion?.Weighting == SearchResultWeightings.Low ? 1
+                                                                                   : (x.SubRegion?.Weighting == SearchResultWeightings.High ? subregionBoost : regionBoost)
+                                                                                ),
+                                                                   UpdatedOn = x.Run?.UpdatedDate
+                                                               };
 
                     if (batchdata.Any())
                     {
@@ -146,9 +158,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                     _log.LogInformation($"*** Successfully merged {succeeded} docs into Azure search index: course");
                 }
 
-            }
-            catch (IndexBatchException ex)
-            {
+            } catch (IndexBatchException ex) {
                 IEnumerable<IndexingResult> failed = ex.IndexingResults.Where(r => !r.Succeeded);
                 _log.LogError(ex, string.Format("Failed to index some of the documents: {0}",
                                                 string.Join(", ", failed)));
@@ -156,9 +166,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                 succeeded = ex.IndexingResults.Count(x => x.Succeeded);
                 return failed;
 
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 throw e;
             }
 
