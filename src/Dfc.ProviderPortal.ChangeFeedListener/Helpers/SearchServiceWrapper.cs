@@ -95,16 +95,23 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
 
                     // Work-based courses have regions instead
                     IEnumerable<LINQComboClass> workbased = from Course c in courses
-                                                            from CourseRun r in c?.CourseRuns?.Where(x => x.DeliveryMode == DeliveryMode.WorkBased) ?? new List<CourseRun>()
+                                                            from CourseRun r in c?.CourseRuns?.Where(x => x.DeliveryMode == DeliveryMode.WorkBased && !x.National.GetValueOrDefault(false)) ?? new List<CourseRun>()
                                                             from SubRegionItemModel subregion in r.SubRegions ?? new List<SubRegionItemModel>()
                                                             select new LINQComboClass() { Course = c, Run = r, SubRegion = subregion, Venue = (AzureSearchVenueModel)null };
-                    _log.LogInformation($"{workbased.Count()} work-based courses (with regions but no VenueId)");
+                    _log.LogInformation($"{workbased.Count()} regional work-based courses (with regions but no VenueId)");
+
+                    // Except for ones with National flag set, where Subregions is null
+                    IEnumerable<LINQComboClass> national =  from Course c in courses
+                                                            from CourseRun r in c?.CourseRuns?.Where(x => x.DeliveryMode == DeliveryMode.WorkBased && x.National.GetValueOrDefault(false)) ?? new List<CourseRun>()
+                                                            //from SubRegionItemModel subregion in ???
+                                                            select new LINQComboClass() { Course = c, Run = r, SubRegion = new SubRegionItemModel() { SubRegionName = "National" }, Venue = (AzureSearchVenueModel)null };
+                    _log.LogInformation($"{national.Count()} national work-based courses (with no regions or VenueId)");
 
 
                     // Online courses have neither
-                    IEnumerable<LINQComboClass> online = from Course c in courses
-                                                         from CourseRun r in c?.CourseRuns?.Where(x => x.DeliveryMode == DeliveryMode.Online) ?? new List<CourseRun>()
-                                                         select new LINQComboClass() { Course = c, Run = r, SubRegion = (SubRegionItemModel)null, Venue = (AzureSearchVenueModel)null };
+                    IEnumerable<LINQComboClass> online =    from Course c in courses
+                                                            from CourseRun r in c?.CourseRuns?.Where(x => x.DeliveryMode == DeliveryMode.Online) ?? new List<CourseRun>()
+                                                            select new LINQComboClass() { Course = c, Run = r, SubRegion = (SubRegionItemModel)null, Venue = (AzureSearchVenueModel)null };
                     _log.LogInformation($"{online.Count()} online courses (with no region or VenueId)");
 
 
@@ -112,6 +119,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                     decimal subregionBoost = _settings.SubRegionSearchBoost ?? 4.5M;
 
                     IEnumerable<AzureSearchCourse> batchdata = from LINQComboClass x in classroom.Union(workbased)
+                                                                                                 .Union(national)
                                                                                                  .Union(online)
                                                                join AzureSearchProviderModel p in providers
                                                                on x.Course?.ProviderUKPRN equals p.UnitedKingdomProviderReferenceNumber
@@ -140,10 +148,10 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                                                                    Region = x.SubRegion?.SubRegionName ?? "",
                                                                    Status = (int?)x.Run?.RecordStatus,
                                                                    //Weighting = "",
-                                                                   ScoreBoost = (x.SubRegion == null || x.SubRegion?.Weighting == SearchResultWeightings.Low ? 1
+                                                                   ScoreBoost = (x.SubRegion == null || x.Run.National.GetValueOrDefault(false) || x.SubRegion?.Weighting == SearchResultWeightings.Low ? 1
                                                                                    : (x.SubRegion?.Weighting == SearchResultWeightings.High ? subregionBoost : regionBoost)
                                                                                 ),
-                                                                   UpdatedOn = x.Run?.UpdatedDate
+                                                                   UpdatedOn = x.Run?.UpdatedDate ?? x.Run?.CreatedDate
                                                                };
 
                     if (batchdata.Any())
