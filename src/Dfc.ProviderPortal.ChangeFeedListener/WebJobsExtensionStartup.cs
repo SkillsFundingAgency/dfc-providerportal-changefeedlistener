@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Net.Http;
+using Dfc.ProviderPortal.ChangeFeedListener.Services;
 using Microsoft.Extensions.Logging;
 
 [assembly: WebJobsStartup(typeof(WebJobsExtensionStartup), "Web Jobs Extension Startup")]
@@ -30,9 +31,17 @@ namespace Dfc.ProviderPortal.ChangeFeedListener
 
             builder.Services.AddSingleton<IConfiguration>(configuration);
           
-            builder.Services.Configure<CosmosDbCollectionSettings>(configuration.GetSection(nameof(CosmosDbCollectionSettings)));
+            //builder.Services.Configure<CosmosDbCollectionSettings>(configuration.GetSection(nameof(CosmosDbCollectionSettings)));
+            builder.Services.Configure<SearchServiceSettings>(configuration.GetSection(nameof(SearchServiceSettings)));
+            builder.Services.Configure<VenueServiceSettings>(configuration.GetSection(nameof(VenueServiceSettings)));
+            builder.Services.Configure<ProviderServiceSettings>(
+                configuration.GetSection(nameof(ProviderServiceSettings)));
             builder.Services.AddScoped<ICosmosDbHelper, CosmosDbHelper>();
             builder.Services.AddTransient<IReportGenerationService, ReportGenerationService>();
+            builder.Services.AddTransient<ICourseAuditService, CourseAuditService>();
+            builder.Services.AddTransient<ISearchServiceWrapper, SearchServiceWrapper>();
+            builder.Services.AddTransient<IVenueServiceWrapper, VenueServiceWrapper>();
+            builder.Services.AddTransient<IProviderServiceWrapper, ProviderServiceWrapper>();
             builder.Services.AddTransient((provider) => new HttpClient());
             
             var serviceProvider = builder.Services.BuildServiceProvider();
@@ -54,7 +63,8 @@ namespace Dfc.ProviderPortal.ChangeFeedListener
                 CoursesCollectionId = configuration["CoursesCollectionId"],
                 CoursesMigrationReportCollectionId = configuration["CoursesMigrationReportCollectionId"],
                 ProviderCollectionId = configuration["ProviderCollectionId"],
-                DfcReportCollectionId = configuration["DfcReportCollectionId"]
+                DfcReportCollectionId = configuration["DfcReportCollectionId"],
+                AuditCollectionId = configuration["AuditCollectionId"]
             };
 
             services.AddSingleton<CosmosDbSettings>(cosmosSettings);

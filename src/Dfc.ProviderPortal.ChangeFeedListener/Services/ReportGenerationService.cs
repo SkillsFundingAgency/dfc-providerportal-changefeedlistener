@@ -1,13 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using Dfc.ProviderPortal.ChangeFeedListener.Interfaces;
-using Dfc.ProviderPortal.ChangeFeedListener.Settings;
 using System.Threading.Tasks;
+using Dfc.ProviderPortal.ChangeFeedListener.Interfaces;
 using Dfc.ProviderPortal.ChangeFeedListener.Models;
-using System;
+using Dfc.ProviderPortal.ChangeFeedListener.Settings;
 using Microsoft.Extensions.Logging;
 
-namespace Dfc.ProviderPortal.ChangeFeedListener
+namespace Dfc.ProviderPortal.ChangeFeedListener.Services
 {
     public class ReportGenerationService : IReportGenerationService
     {
@@ -49,7 +49,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener
                     LiveCount = courses.SelectMany(c => c.CourseRuns.Where(cr => cr.RecordStatus == RecordStatus.Live)).Count(),
                     MigratedCount = migrationReport?.PreviousLiveCourseCount,
                     MigrationDate = migrationReport?.Timestamp,
-                    MigrationRate = decimal.Round(MigrationRate(courses), 2, MidpointRounding.AwayFromZero),
+                    MigrationRate = decimal.Round(MigrationRate(courses, migrationReport?.LarslessCourses.Count()), 2, MidpointRounding.AwayFromZero),
                     ProviderName = provider.ProviderName,
                     ProviderType = provider.ProviderType
 
@@ -84,8 +84,13 @@ namespace Dfc.ProviderPortal.ChangeFeedListener
                 {
                     await UpdateReport(int.Parse(provider.UnitedKingdomProviderReferenceNumber));
                 }
-                catch
+                catch(Exception ex)
                 {
+                    if (!ex.Message.Contains("Unable to generate report for Provider"))
+                    {
+
+                        var t = ex;
+                    }
                     log.LogWarning($"Unable to update Report for Provider{provider.UnitedKingdomProviderReferenceNumber}");
                 } 
             }
@@ -96,7 +101,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener
             await UpdateReport(ukprn);
         }
 
-        private decimal MigrationRate(IList<Course> courses)
+        private decimal MigrationRate(IList<Course> courses, int? failedCoursesCount)
         {
             var statusList = new List<RecordStatus>
             {
@@ -104,13 +109,15 @@ namespace Dfc.ProviderPortal.ChangeFeedListener
                 RecordStatus.MigrationPending,
                 RecordStatus.MigrationReadyToGoLive
             };
-
+            failedCoursesCount = failedCoursesCount ?? 0;
 
             if (courses.SelectMany(c => c.CourseRuns.Where(cr => statusList.Contains(cr.RecordStatus))).Any())
             {
+                
+                var liveCourses = (decimal)courses.SelectMany(c => c.CourseRuns.Where(cr => cr.RecordStatus == RecordStatus.Live)).Count();
+                var migratedDataValue = ((decimal)courses.SelectMany(c => c.CourseRuns.Where(cr => statusList.Contains(cr.RecordStatus))).Count() + failedCoursesCount.Value);
 
-                return ((decimal)courses.SelectMany(c => c.CourseRuns.Where(cr => cr.RecordStatus == RecordStatus.Live)).Count() /
-                       (decimal)(courses.SelectMany(c=>c.CourseRuns.Where(cr=> statusList.Contains(cr.RecordStatus))).Count()) * 100);
+                return ((liveCourses / migratedDataValue) * 100);
             }
 
             return 0;
