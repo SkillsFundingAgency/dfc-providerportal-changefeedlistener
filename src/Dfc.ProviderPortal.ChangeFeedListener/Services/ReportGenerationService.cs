@@ -105,7 +105,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Services
         {
             var statusList = new List<RecordStatus>
             {
-                RecordStatus.Live,
+                //RecordStatus.Live,
                 RecordStatus.MigrationPending,
                 RecordStatus.MigrationReadyToGoLive
             };
@@ -115,7 +115,8 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Services
             {
                 
                 var liveCourses = (decimal)courses.SelectMany(c => c.CourseRuns.Where(cr => cr.RecordStatus == RecordStatus.Live)).Count();
-                var migratedDataValue = ((decimal)courses.SelectMany(c => c.CourseRuns.Where(cr => statusList.Contains(cr.RecordStatus))).Count() + failedCoursesCount.Value);
+                var migratedDataValue = ((decimal) courses
+                    .SelectMany(c => c.CourseRuns.Where(cr => statusList.Contains(cr.RecordStatus))).Count());// + failedCoursesCount.Value);
 
                 return ((liveCourses / migratedDataValue) * 100);
             }
