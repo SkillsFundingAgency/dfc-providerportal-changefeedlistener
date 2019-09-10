@@ -43,7 +43,10 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.ProviderChangeFeedTrigger
                 IEnumerable<Document> deactivatedDocs = documents.Where(d => d.GetPropertyValue<string>("ProviderStatus") == "PD1"
                                                                           || d.GetPropertyValue<string>("ProviderStatus") == "PD2");
                 log.LogInformation($"Processing {deactivatedDocs.LongCount()} provider documents with status PD1/PD2");
-                IEnumerable<Document> results = await courseArchiveService.ArchiveAllCourses(log, deactivatedDocs);
+
+                IEnumerable<Document> results = new List<Document>();
+                if (deactivatedDocs.Any())
+                    results = await courseArchiveService.ArchiveAllCourses(log, deactivatedDocs);
 
             } catch (Exception e) {
                 log.LogError(e, "Indexing error in ProviderChangeFeedTrigger");
