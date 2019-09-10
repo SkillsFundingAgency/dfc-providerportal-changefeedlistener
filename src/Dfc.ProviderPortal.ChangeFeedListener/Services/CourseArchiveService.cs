@@ -49,23 +49,27 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Services
                         int UKPRN = doc.GetPropertyValue<int?>("UnitedKingdomProviderReferenceNumber") ?? 0;
                         if (UKPRN > 10000000)
                         {
+                            log.LogInformation($"Processing document with UKPRN {UKPRN}");
                             IEnumerable<Course> courseDocs = client.CreateDocumentQuery<Course>(uri, options)
                                                                    .Where(x => x.ProviderUKPRN == UKPRN);
                             foreach (Course courseDoc in courseDocs)
                             {
+                                log.LogInformation($"Archiving course with id {courseDoc.id}");
                                 Uri docUri = UriFactory.CreateDocumentUri(_dbSettings.DatabaseId, _settings.CoursesCollectionId, courseDoc.id.ToString());
 
                                 //var result = await client.DeleteDocumentAsync(docUri, new RequestOptions() { PartitionKey = new PartitionKey(doc.ProviderUKPRN) });
-                                var result = client.ReadDocumentAsync(docUri, new RequestOptions() { PartitionKey = new PartitionKey(UKPRN) }).Result;
-                                result.Resource.SetPropertyValue("CourseStatus", (int)RecordStatus.Archived);
-                                //result = await client.UpsertDocumentAsync(docUri, result.Resource);
-                                Document resultDoc = await _cosmosDbHelper.UpdateDocumentAsync(client, _settings.CoursesCollectionId, courseDoc);
-                                responseList.Add(resultDoc);
-
-                                if (result.StatusCode == HttpStatusCode.OK && resultDoc != null)
-                                    log.LogInformation($"Course with LARS ( { courseDoc.LearnAimRef } ) and Title ( { courseDoc.QualificationCourseTitle } ) was archived");
-                                else
-                                    log.LogInformation($"Course with LARS ( { courseDoc.LearnAimRef } ) and Title ( { courseDoc.QualificationCourseTitle } ) wasn't archived. StatusCode: ( { result.StatusCode } )");
+                                Document d = client.ReadDocumentAsync(docUri, new RequestOptions() { PartitionKey = new PartitionKey(UKPRN) })
+                                                  ?.Result
+                                                  ?.Resource;
+                                if (d == null)
+                                    log.LogInformation($"** Course with id {courseDoc.id} and Title {courseDoc.QualificationCourseTitle} wasn't archived");
+                                else {
+                                    d.SetPropertyValue("CourseStatus", (int)RecordStatus.Archived);
+                                    //result = await client.UpsertDocumentAsync(docUri, result.Resource);
+                                    d = await _cosmosDbHelper.UpdateDocumentAsync(client, _settings.CoursesCollectionId, d);
+                                    responseList.Add(d);
+                                    log.LogInformation($"  archived successfully");
+                                }
                             }
                         }
                     }
