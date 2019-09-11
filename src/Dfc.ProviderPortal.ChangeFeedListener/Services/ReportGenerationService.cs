@@ -49,7 +49,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Services
                     LiveCount = courses.SelectMany(c => c.CourseRuns.Where(cr => cr.RecordStatus == RecordStatus.Live)).Count(),
                     MigratedCount = migrationReport?.PreviousLiveCourseCount,
                     MigrationDate = migrationReport?.Timestamp,
-                    MigrationRate = decimal.Round(MigrationRate(courses, migrationReport?.LarslessCourses.Count()), 2, MidpointRounding.AwayFromZero),
+                    MigrationRate = decimal.Round(MigrationRate(courses), 2, MidpointRounding.AwayFromZero),
                     ProviderName = provider.ProviderName,
                     ProviderType = provider.ProviderType
 
@@ -101,22 +101,21 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Services
             await UpdateReport(ukprn);
         }
 
-        private decimal MigrationRate(IList<Course> courses, int? failedCoursesCount)
+        private decimal MigrationRate(IList<Course> courses)
         {
             var statusList = new List<RecordStatus>
             {
-                //RecordStatus.Live,
+                RecordStatus.Live,
                 RecordStatus.MigrationPending,
                 RecordStatus.MigrationReadyToGoLive
             };
-            failedCoursesCount = failedCoursesCount ?? 0;
 
             if (courses.SelectMany(c => c.CourseRuns.Where(cr => statusList.Contains(cr.RecordStatus))).Any())
             {
                 
                 var liveCourses = (decimal)courses.SelectMany(c => c.CourseRuns.Where(cr => cr.RecordStatus == RecordStatus.Live)).Count();
                 var migratedDataValue = ((decimal) courses
-                    .SelectMany(c => c.CourseRuns.Where(cr => statusList.Contains(cr.RecordStatus))).Count());// + failedCoursesCount.Value);
+                    .SelectMany(c => c.CourseRuns.Where(cr => statusList.Contains(cr.RecordStatus))).Count());
 
                 return ((liveCourses / migratedDataValue) * 100);
             }
