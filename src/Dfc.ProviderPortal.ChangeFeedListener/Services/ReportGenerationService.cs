@@ -45,7 +45,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Services
                     MigrationReadyToGoLive = courses.SelectMany(x => x.CourseRuns.Where(cr => cr.RecordStatus == RecordStatus.MigrationReadyToGoLive)).Count(),
                     BulkUploadPendingcount = courses.SelectMany(x => x.CourseRuns.Where(cr => cr.RecordStatus == RecordStatus.BulkUloadPending)).Count(),
                     BulkUploadReadyToGoLiveCount = courses.SelectMany(x => x.CourseRuns.Where(cr => cr.RecordStatus == RecordStatus.BulkUploadReadyToGoLive)).Count(),
-                    FailedMigrationCount = migrationReport?.LarslessCourses.Count(),
+                    FailedMigrationCount = migrationReport?.LarslessCourses?.SelectMany(cr => cr.CourseRuns)?.Count(),
                     LiveCount = courses.SelectMany(c => c.CourseRuns.Where(cr => cr.RecordStatus == RecordStatus.Live)).Count(),
                     MigratedCount = migrationReport?.PreviousLiveCourseCount,
                     MigrationDate = migrationReport?.Timestamp,
