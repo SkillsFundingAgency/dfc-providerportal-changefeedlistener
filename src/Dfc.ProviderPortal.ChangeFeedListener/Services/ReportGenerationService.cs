@@ -33,7 +33,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Services
                      ukprn);
 
 
-                if (!courses.Any() || provider == null)
+                if (provider == null || !HasValidReportOrCourses(courses, migrationReport))
                 {
                     throw new Exception($"Unable to generate report for Provider: {ukprn}");
                 }
@@ -121,6 +121,11 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Services
             }
 
             return 0;
+        }
+
+        private bool HasValidReportOrCourses(IList<Course> courses, CourseMigrationReport report)
+        {
+            return  (courses.Any() || report != null && report.LarslessCourses.Any());
         }
     }
 }
