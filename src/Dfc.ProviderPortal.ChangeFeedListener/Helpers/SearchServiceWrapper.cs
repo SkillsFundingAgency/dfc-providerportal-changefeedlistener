@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -79,6 +80,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                         NotionalNVQLevelv2 = d.GetPropertyValue<string>("NotionalNVQLevelv2"),
                         UpdatedDate = d.GetPropertyValue<DateTime?>("UpdatedDate"),
                         ProviderUKPRN = int.Parse(d.GetPropertyValue<string>("ProviderUKPRN")),
+                        CourseDescription = d.GetPropertyValue<string>("CourseDescription"),
                         CourseRuns = d.GetPropertyValue<IEnumerable<CourseRun>>("CourseRuns")
                     });
 
@@ -127,7 +129,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                                                                select new AzureSearchCourse()
                                                                {
                                                                    id = ((x.Run?.DeliveryMode == DeliveryMode.WorkBased && x.Run?.SubRegions?.Count() > 1)
-                                                                                ? Guid.NewGuid() 
+                                                                                ? Guid.NewGuid()
                                                                                 : (x.Run?.id ?? Guid.NewGuid())
                                                                         ),
                                                                    CourseId = x.Course?.id,
@@ -143,6 +145,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                                                                                   string.IsNullOrWhiteSpace(x.Venue?.COUNTY) ? "" : x.Venue?.COUNTY + ", ",
                                                                                   x.Venue?.POSTCODE) ?? "",
                                                                    VenueAttendancePattern = ((int)x.Run?.AttendancePattern).ToString(),
+                                                                   VenueAttendancePatternDescription = x.Run?.AttendancePattern.Description(),
                                                                    VenueLocation = GeographyPoint.Create(x.Venue?.Latitude ?? 0, x.Venue?.Longitude ?? 0),
                                                                    ProviderName = p?.ProviderName,
                                                                    Region = x.SubRegion?.SubRegionName ?? "",
@@ -151,6 +154,25 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                                                                    ScoreBoost = (x.SubRegion == null || x.Run.National.GetValueOrDefault(false) || x.SubRegion?.Weighting == SearchResultWeightings.Low ? 1
                                                                                    : (x.SubRegion?.Weighting == SearchResultWeightings.High ? subregionBoost : regionBoost)
                                                                                 ),
+                                                                   //VenueEmail = ???,
+                                                                   //VenuePhoneNo = ???,
+                                                                   //SupportFacilities = ???,
+                                                                   //VenueLat = ???,
+                                                                   //VenueLong = ???,
+                                                                   //VenueFax = ???,
+                                                                   VenueTown = x.Venue?.TOWN,
+                                                                   VenueStudyMode = ((int)x.Run?.StudyMode).ToString(),
+                                                                   VenueStudyModeDescription = x.Run?.StudyMode.Description(),
+                                                                   DeliveryMode = ((int)x.Run?.DeliveryMode).ToString(),
+                                                                   DeliveryModeDescription = x.Run?.DeliveryMode.Description(),
+                                                                   //OpportunityId = ???,
+                                                                   //SubjectCategory = ???,
+                                                                   //EquipmentRequired = ???,
+                                                                   //AssessmentMethod = ???,
+                                                                   Cost = (x.Run?.Cost == null ? (int?)null : int.Parse(x.Run?.Cost?.ToString())),
+                                                                   CostDescription = x.Run?.CostDescription,
+                                                                   StartDate = x.Run?.StartDate,
+                                                                   CourseText = x.Course?.CourseDescription,
                                                                    UpdatedOn = x.Run?.UpdatedDate ?? x.Run?.CreatedDate
                                                                };
 

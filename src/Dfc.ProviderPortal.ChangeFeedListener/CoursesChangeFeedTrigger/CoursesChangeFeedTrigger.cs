@@ -1,4 +1,6 @@
-﻿using System;
+﻿
+using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Dfc.ProviderPortal.ChangeFeedListener.Interfaces;
@@ -9,6 +11,7 @@ using Microsoft.Azure.Search.Models;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Document = Microsoft.Azure.Documents.Document;
+
 
 namespace Dfc.ProviderPortal.ChangeFeedListener.CoursesChangeFeedTrigger
 {
@@ -34,8 +37,6 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.CoursesChangeFeedTrigger
             [Inject] IReportGenerationService reportGenerationService,
             [Inject] ICourseAuditService courseAuditService)
         {
-            Course course = null;
-
             try
             {  // Index documents
                 log.LogInformation("Entered FindACourseSearchCosmosTrigger");
@@ -46,15 +47,17 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.CoursesChangeFeedTrigger
                 CourseAudit ca = null;
                 log.LogInformation($"Auditing changes to {documents.Count} documents");
                 foreach (var document in documents)
-                {
                     ca = await courseAuditService.Audit(log, document);
 
-                    course = (Course)((dynamic)document);
-                    await reportGenerationService.UpdateReport(course.ProviderUKPRN);
+                // Generate report data
+                foreach (string UKPRN in documents.Select(d => d.GetPropertyValue<string>("ProviderUKPRN"))
+                                                  .Distinct())
+                {
+                    log.LogInformation($"Generating report data for provider {UKPRN}");
+                    await reportGenerationService.UpdateReport(int.Parse(UKPRN));
                 }
-            }
-            catch (Exception e)
-            {
+
+            } catch (Exception e) {
                 log.LogError(e, "Indexing error in FindACourseSearchCosmosTrigger");
             }
 
