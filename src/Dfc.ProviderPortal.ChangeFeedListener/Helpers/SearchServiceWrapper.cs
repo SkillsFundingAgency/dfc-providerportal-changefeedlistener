@@ -147,6 +147,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                                                                    VenueAttendancePattern = ((int)x.Run?.AttendancePattern).ToString(),
                                                                    VenueAttendancePatternDescription = x.Run?.AttendancePattern.Description(),
                                                                    VenueLocation = GeographyPoint.Create(x.Venue?.Latitude ?? 0, x.Venue?.Longitude ?? 0),
+                                                                   UKPRN = x.Course?.ProviderUKPRN.ToString(),
                                                                    ProviderName = p?.ProviderName,
                                                                    Region = x.SubRegion?.SubRegionName ?? "",
                                                                    Status = (int?)x.Run?.RecordStatus,
