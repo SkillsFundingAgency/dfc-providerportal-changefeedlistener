@@ -18,6 +18,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Models
         public GeographyPoint VenueLocation { get; set; }
         public string VenueAttendancePattern { get; set; }
         public string VenueAttendancePatternDescription { get; set; }
+        public string UKPRN { get; set; }
         public string ProviderName { get; set; }
         public string Region { get; set; }
         //public string Weighting { get; set; }
