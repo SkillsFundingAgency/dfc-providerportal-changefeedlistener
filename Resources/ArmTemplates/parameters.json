@@ -38,6 +38,9 @@
       "cosmosDbConnectionString": {
         "value": "__providerPortalCosmosDbConnectionString__"
       },
+      "cosmosDbAccount": {
+        "value": "__providerPortalCosmosDBName__"
+      },
       "cosmosDbDatabase": {
         "value": "__providerPortalCosmosDbAccDatabaseName__"
       },

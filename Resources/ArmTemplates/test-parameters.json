@@ -38,6 +38,9 @@
     "cosmosDbDatabase": {
       "value": "aDatabase"
     },
+    "cosmosDbAccount": {
+      "value": "myCosmosAccount"
+    },
     "cosmosDbProviderCollectionName": {
       "value": "providerportalCollection"
     },

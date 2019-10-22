@@ -14,7 +14,7 @@
         "description": "App service plan to run the function app under"
       }
     },
-    "appServicePlanResourceGroup": {
+    "sharedResourceGroup": {
       "type": "string",
       "metadata": {
         "description": "Resource group the app service plan is in"
@@ -70,6 +70,12 @@
       "type": "string",
       "metadata": {
         "description": "The connection string to the cosmosdb account (app setting)"
+      }
+    },
+    "cosmosDbAccount": {
+      "type": "string",
+      "metadata": { 
+        "description": "The name of the cosmosdb account (used to create collections)"
       }
     },
     "cosmosDbDatabase": {
@@ -222,7 +228,7 @@
             "value": "[parameters('appServicePlanName')]"
           },
           "appServicePlanResourceGroup": {
-            "value": "[parameters('appServicePlanResourceGroup')]"
+            "value": "[parameters('sharedResourceGroup')]"
           },
           "appServiceType": {
             "value": "functionapp"
@@ -416,6 +422,117 @@
           },
           "apiSuffix": {
             "value": "[parameters('apiSuffix')]"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "2017-05-10",
+      "name": "cosmosCollectionAudit",
+      "type": "Microsoft.Resources/deployments",
+      "resourceGroup": "[parameters('sharedResourceGroup')]",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+            "uri": "[concat(variables('deploymentUrlBase'),'CosmosDb/cosmos-collection.json')]",
+            "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "accountName": {
+              "value": "[parameters('cosmosDbAccount')]"
+          },
+          "databaseName": {
+              "value": "[parameters('cosmosDBdatabase')]"
+          },
+          "collectionName": {
+              "value": "audit"
+          },
+          "offerThroughput": {
+              "value": 400
+          },
+          "partitionKey": {
+              "value": "/Collection"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "2017-05-10",
+      "name": "cosmosCollectionCourseMigrationReportsLease",
+      "type": "Microsoft.Resources/deployments",
+      "resourceGroup": "[parameters('sharedResourceGroup')]",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+            "uri": "[concat(variables('deploymentUrlBase'),'CosmosDb/cosmos-collection.json')]",
+            "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "accountName": {
+              "value": "[parameters('cosmosDbAccount')]"
+          },
+          "databaseName": {
+              "value": "[parameters('cosmosDBdatabase')]"
+          },
+          "collectionName": {
+              "value": "courseMigrationReports-lease"
+          },
+          "offerThroughput": {
+              "value": 400
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "2017-05-10",
+      "name": "cosmosCollectionCoursesLease",
+      "type": "Microsoft.Resources/deployments",
+      "resourceGroup": "[parameters('sharedResourceGroup')]",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+            "uri": "[concat(variables('deploymentUrlBase'),'CosmosDb/cosmos-collection.json')]",
+            "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "accountName": {
+              "value": "[parameters('cosmosDbAccount')]"
+          },
+          "databaseName": {
+              "value": "[parameters('cosmosDBdatabase')]"
+          },
+          "collectionName": {
+              "value": "courses-lease"
+          },
+          "offerThroughput": {
+              "value": 400
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "2017-05-10",
+      "name": "cosmosCollectionDfcReport",
+      "type": "Microsoft.Resources/deployments",
+      "resourceGroup": "[parameters('sharedResourceGroup')]",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+            "uri": "[concat(variables('deploymentUrlBase'),'CosmosDb/cosmos-collection.json')]",
+            "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "accountName": {
+              "value": "[parameters('cosmosDbAccount')]"
+          },
+          "databaseName": {
+              "value": "[parameters('cosmosDBdatabase')]"
+          },
+          "collectionName": {
+              "value": "DfcReport"
+          },
+          "offerThroughput": {
+              "value": 400
           }
         }
       }
