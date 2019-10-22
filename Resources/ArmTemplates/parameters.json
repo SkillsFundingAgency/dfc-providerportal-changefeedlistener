@@ -8,7 +8,7 @@
       "appServicePlanName": {
         "value": "__providerPortalAppServicePlan__"
       },
-      "appServicePlanResourceGroup": {
+      "sharedResourceGroup": {
         "value": "__providerPortalResourceGroup__"
       },
       "storageConnectionString": {
