@@ -8,7 +8,7 @@
       "appServicePlanName": {
         "value": "__providerPortalAppServicePlan__"
       },
-      "appServicePlanResourceGroup": {
+      "sharedResourceGroup": {
         "value": "__providerPortalResourceGroup__"
       },
       "storageConnectionString": {
@@ -37,6 +37,9 @@
       },
       "cosmosDbConnectionString": {
         "value": "__providerPortalCosmosDbConnectionString__"
+      },
+      "cosmosDbAccount": {
+        "value": "__providerPortalCosmosDBName__"
       },
       "cosmosDbDatabase": {
         "value": "__providerPortalCosmosDbAccDatabaseName__"
