@@ -536,6 +536,36 @@
           }
         }
       }
+    },
+    {
+      "apiVersion": "2017-05-10",
+      "name": "cosmosCollectionApprenticeshipDfcReport",
+      "type": "Microsoft.Resources/deployments",
+      "resourceGroup": "[parameters('sharedResourceGroup')]",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+            "uri": "[concat(variables('deploymentUrlBase'),'CosmosDb/cosmos-collection.json')]",
+            "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "accountName": {
+              "value": "[parameters('cosmosDbAccount')]"
+          },
+          "databaseName": {
+              "value": "[parameters('cosmosDBdatabase')]"
+          },
+          "collectionName": {
+              "value": "ApprenticeshipDfcReportCollection"
+          },
+          "offerThroughput": {
+              "value": 400
+          },
+          "partitionKey": {
+              "value": "/ProviderUKPRN"
+          }
+        }
+      }
     }
   ],
   "outputs": {
