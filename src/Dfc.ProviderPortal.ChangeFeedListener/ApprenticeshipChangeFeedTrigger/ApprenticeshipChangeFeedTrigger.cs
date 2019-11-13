@@ -33,12 +33,9 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.ApprenticeshipChangeFeedTrigger
             [Inject] IReportGenerationService reportGenerationService,
             [Inject] ICourseAuditService courseAuditService)
         {
-            return;
             try
             {  // Index documents
                 log.LogInformation("Entered ApprenticeshipChangeFeedTrigger");
-                log.LogInformation($"Processing {documents.Count} documents for indexing to Azure search");
-                IEnumerable<IndexingResult> results = await courseAuditService.UploadCoursesToSearch(log, documents);
 
                 // Audit changes to documents
                 // Generate report data
