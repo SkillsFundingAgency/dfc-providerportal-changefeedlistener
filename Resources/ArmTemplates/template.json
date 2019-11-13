@@ -362,8 +362,39 @@
               {
                 "name": "ProviderServiceSettings__ApiKey",
                 "value": "[parameters('apimKey')]"
+              },
+              {
+                "name": "ApprenticeshipCollectionId",
+                "value": "apprenticeship"
+              },
+              {
+                "name": "ApprenticeshipLeaseCollectionName",
+                "value": "apprenticeship-lease"
+              },
+              {
+                "name": "ApprenticeshipsLeaseCollectionPrefix",
+                "value": "apprenticeshipPrefix"
+              },
+              {
+                "name": "ApprenticeshipMigrationReportLeaseCollectionName",
+                "value": "apprenticeshipReport-lease"
+              },
+              {
+                "name": "ApprenticeshipMigrationReportLeaseCollectionPrefix",
+                "value": "apprenticeshipReportPrefix"
+              },
+              {
+                "name": "ApprenticeshipMigrationReportCollectionId",
+                "value": "apprenticeshipReport"
+              },
+              {
+                "name": "ApprenticeshipDfcReportCollectionId",
+                "value": "ApprenticeshipDfcReportCollection"
+              },
+              {
+                "name": "ProviderLeaseCollectionName",
+                "value": "ukrlp-lease"
               }
-
             ]
           },
           "deployStagingSlot": {
