@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Hosting;
@@ -8,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Dfc.ProviderPortal.ChangeFeedListener;
 using Dfc.ProviderPortal.ChangeFeedListener.Helpers;
 using Dfc.ProviderPortal.ChangeFeedListener.Interfaces;
+using Dfc.ProviderPortal.ChangeFeedListener.Models;
 using Dfc.ProviderPortal.ChangeFeedListener.Services;
 using Dfc.ProviderPortal.ChangeFeedListener.Settings;
 using Dfc.ProviderPortal.Packages.AzureFunctions.DependencyInjection;
@@ -37,16 +39,15 @@ namespace Dfc.ProviderPortal.ChangeFeedListener
             builder.Services.Configure<VenueServiceSettings>(configuration.GetSection(nameof(VenueServiceSettings)));
             builder.Services.Configure<ProviderServiceSettings>(configuration.GetSection(nameof(ProviderServiceSettings)));
             builder.Services.AddScoped<ICosmosDbHelper, CosmosDbHelper>();
-            builder.Services.AddTransient<IReportGenerationService, ReportGenerationService>();
             builder.Services.AddTransient<ICourseAuditService, CourseAuditService>();
             builder.Services.AddTransient<ICourseArchiveService, CourseArchiveService>();
             builder.Services.AddTransient<ISearchServiceWrapper, SearchServiceWrapper>();
             builder.Services.AddTransient<IVenueServiceWrapper, VenueServiceWrapper>();
             builder.Services.AddTransient<IProviderServiceWrapper, ProviderServiceWrapper>();
             builder.Services.AddTransient((provider) => new HttpClient());
-            
+            ReportGenerationResolver(builder.Services);
+
             var serviceProvider = builder.Services.BuildServiceProvider();
-            serviceProvider.GetService<IReportGenerationService>().Initialise().Wait();
         }
 
         private void BuildCosmosDbSettings(IServiceCollection services, IConfigurationRoot configuration)
@@ -64,11 +65,35 @@ namespace Dfc.ProviderPortal.ChangeFeedListener
                 CoursesMigrationReportCollectionId = configuration["CoursesMigrationReportCollectionId"],
                 ProviderCollectionId = configuration["ProviderCollectionId"],
                 DfcReportCollectionId = configuration["DfcReportCollectionId"],
-                AuditCollectionId = configuration["AuditCollectionId"]
+                AuditCollectionId = configuration["AuditCollectionId"],
+                ApprenticeshipMigrationReportCollectionId = configuration["ApprenticeshipMigrationReportCollectionId"],
+                ApprenticeshipCollectionId = configuration["ApprenticeshipCollectionId"],
+                ApprenticeshipDfcReportCollection = configuration["ApprenticeshipDfcReportCollectionId"]
             };
 
             services.AddSingleton<CosmosDbSettings>(cosmosSettings);
             services.AddSingleton<CosmosDbCollectionSettings>(cosmosCollectionSettings);
+        }
+
+        private void ReportGenerationResolver(IServiceCollection services)
+        {
+            services.AddTransient<ReportGenerationServiceResolver>(serviceProvider => type =>
+            {
+                switch (type)
+                {
+                    case ProcessType.Apprenticeship:
+
+                        return new ApprenticeshipReportGenerationService(
+                            serviceProvider.GetService<ICosmosDbHelper>(),
+                            serviceProvider.GetService<CosmosDbCollectionSettings>());
+                    case ProcessType.Course:
+                        return new CourseReportGenerationService(
+                            serviceProvider.GetService<ICosmosDbHelper>(),
+                            serviceProvider.GetService<CosmosDbCollectionSettings>());
+                    default:
+                        throw new KeyNotFoundException();
+                }
+            });
         }
     }
 }

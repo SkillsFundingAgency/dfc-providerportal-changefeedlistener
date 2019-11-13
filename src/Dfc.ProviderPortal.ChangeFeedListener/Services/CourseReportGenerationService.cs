@@ -9,12 +9,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Dfc.ProviderPortal.ChangeFeedListener.Services
 {
-    public class ReportGenerationService : IReportGenerationService
+    public class CourseReportGenerationService : IReportGenerationService
     {
         private readonly ICosmosDbHelper _cosmosDbHelper;
         private readonly CosmosDbCollectionSettings _settings;
 
-        public ReportGenerationService(ICosmosDbHelper cosmosDbHelper, CosmosDbCollectionSettings settings)
+        public CourseReportGenerationService(ICosmosDbHelper cosmosDbHelper, CosmosDbCollectionSettings settings)
         {
             _cosmosDbHelper = cosmosDbHelper;
             _settings = settings;
@@ -38,7 +38,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Services
                     throw new Exception($"Unable to generate report for Provider: {ukprn}");
                 }
 
-                var report = new ReportDocument
+                var report = new CourseReportDocument
                 {
                     ProviderUKPRN = ukprn.ToString(),
                     MigrationPendingCount = courses.SelectMany(x => x.CourseRuns.Where(cr => cr.RecordStatus == RecordStatus.MigrationPending)).Count(),
@@ -58,31 +58,25 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Services
                 await _cosmosDbHelper.UpdateDocumentAsync(client, _settings.DfcReportCollectionId, report);
             }
         }
-
-        public async Task Initialise()
-        {
-            using (var client = _cosmosDbHelper.GetClient())
-            {
-                await _cosmosDbHelper.CreateDocumentCollectionIfNotExistsAsync(client,
-                     _settings.DfcReportCollectionId);
-            }
-        }
-
+        
         public async Task GenerateAllReports(ILogger log)
         {
-            var providers = new List<Provider>();
+            var reportsList = new List<CourseMigrationReport>();
+
             using (var client = _cosmosDbHelper.GetClient())
             {
-               var providersResult = await _cosmosDbHelper.GetOnboardedProviders(client,_settings.ProviderCollectionId);
+                var reports = await _cosmosDbHelper.GetAllDocuments<CourseMigrationReport>(client,
+                    _settings.ApprenticeshipMigrationReportCollectionId);
 
-               providers.AddRange(providersResult);
+                reportsList.AddRange(reports);
             }
 
-            foreach (var provider in providers)
+
+            foreach (var report in reportsList)
             {
                 try
                 {
-                    await UpdateReport(int.Parse(provider.UnitedKingdomProviderReferenceNumber));
+                    await UpdateReport(int.Parse(report.ProviderUKPRN.ToString()));
                 }
                 catch(Exception ex)
                 {
@@ -91,7 +85,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Services
 
                         var t = ex;
                     }
-                    log.LogWarning($"Unable to update Report for Provider{provider.UnitedKingdomProviderReferenceNumber}");
+                    log.LogWarning($"Unable to update Report for Provider{report.ProviderUKPRN.ToString()}");
                 } 
             }
         }

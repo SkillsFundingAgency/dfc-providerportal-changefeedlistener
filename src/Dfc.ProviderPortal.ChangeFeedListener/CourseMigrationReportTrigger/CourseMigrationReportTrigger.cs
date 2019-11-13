@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Dfc.ProviderPortal.ChangeFeedListener.Services;
 
 
 namespace Dfc.ProviderPortal.ChangeFeedListener.CourseMigrationReportTrigger
@@ -20,9 +21,9 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.CourseMigrationReportTrigger
         private const string LeaseCollectionPrefix = "%CoursesMigrationReportLeaseCollectionPrefix%";
         private readonly IReportGenerationService _reportGenerationService;
 
-        public CourseMigrationReportTrigger(IReportGenerationService reportGenerationService)
+        public CourseMigrationReportTrigger(ReportGenerationServiceResolver reportGenerationServiceResolver)
         {
-            _reportGenerationService = reportGenerationService;
+            _reportGenerationService = reportGenerationServiceResolver(ProcessType.Course);
         }
 
         [FunctionName("CourseMigrationReportChangeFeedTrigger")]
@@ -36,7 +37,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.CourseMigrationReportTrigger
             )]
             IReadOnlyList<Document> documents,
             ILogger log,
-            [Inject] IReportGenerationService reportGenerationService)
+            [Inject] ReportGenerationServiceResolver reportGenerationServiceResolver)
         {
             Course course = null;
 

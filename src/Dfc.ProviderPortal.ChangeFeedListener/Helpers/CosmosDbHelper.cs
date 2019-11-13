@@ -101,7 +101,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
             Uri uri = UriFactory.CreateDocumentCollectionUri(_settings.DatabaseId, collectionId);
             FeedOptions options = new FeedOptions { EnableCrossPartitionQuery = true, MaxItemCount = -1 };
 
-            using (var queryable = client.CreateDocumentQuery<Provider>(uri,options).Where(x=>x.Status == Status.Onboarded).AsDocumentQuery())
+            using (var queryable = client.CreateDocumentQuery<Provider>(uri, options).Where(x => x.Status == Status.Onboarded).AsDocumentQuery())
             {
                 while (queryable.HasMoreResults)
                 {
@@ -113,6 +113,29 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
             }
 
             return providers;
+        }
+
+        public async Task<IList<T>> GetAllDocuments<T>(DocumentClient client, string collectionId)
+        {
+            var uri = UriFactory.CreateDocumentCollectionUri(_settings.DatabaseId, collectionId);
+            FeedOptions options = new FeedOptions { EnableCrossPartitionQuery = true, MaxItemCount = -1 };
+
+            var documents = new List<T>();
+
+            using (var queryable = client.CreateDocumentQuery<T>(uri, "Select * from c", options).AsDocumentQuery())
+            {
+                while (queryable.HasMoreResults)
+                {
+                    foreach (T doc in await queryable.ExecuteNextAsync<T>())
+                    {
+                        documents.Add(doc);
+                    }
+                }
+
+            }
+
+
+            return documents;
         }
 
         public async Task<Document> CreateDocumentAsync(DocumentClient client, string collectionId, object document)

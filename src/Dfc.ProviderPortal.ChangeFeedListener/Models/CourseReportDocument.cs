@@ -3,7 +3,7 @@ using System;
 
 namespace Dfc.ProviderPortal.ChangeFeedListener.Models
 {
-    public class ReportDocument
+    public class CourseReportDocument
     {
         [JsonProperty(PropertyName = "id")]
         public string ProviderUKPRN { get; set; }
