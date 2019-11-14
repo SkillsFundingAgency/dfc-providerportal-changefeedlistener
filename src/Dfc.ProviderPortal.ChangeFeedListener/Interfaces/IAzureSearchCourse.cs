@@ -28,5 +28,6 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Interfaces
         int? Cost { get; set; }
         string CostDescription { get; set; }
         string CourseText { get; set; }
+        string CourseDescription { get; set; }
     }
 }
