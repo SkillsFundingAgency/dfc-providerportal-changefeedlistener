@@ -170,7 +170,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                                                                    //SubjectCategory = ???,
                                                                    //EquipmentRequired = ???,
                                                                    //AssessmentMethod = ???,
-                                                                   Cost = (x.Run?.Cost == null ? (int?)null : int.Parse(x.Run?.Cost?.ToString())),
+                                                                   Cost = (x.Run?.Cost == null ? (int?)null : Convert.ToInt32(x.Run.Cost)),
                                                                    CostDescription = x.Run?.CostDescription,
                                                                    StartDate = x.Run?.StartDate,
                                                                    CourseText = x.Course?.CourseDescription,
