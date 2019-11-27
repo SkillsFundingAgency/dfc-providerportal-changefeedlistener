@@ -1,4 +1,5 @@
 ﻿using Dfc.ProviderPortal.ChangeFeedListener.Interfaces;
+using Dfc.ProviderPortal.ChangeFeedListener.Services;
 using Dfc.ProviderPortal.Packages.AzureFunctions.DependencyInjection;
 using Microsoft.Azure.Search.Models;
 using Microsoft.Azure.WebJobs;
@@ -30,11 +31,14 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.ApprenticeshipChangeFeedTrigger
             )]
             IReadOnlyList<Document> documents,
             ILogger log,
-            [Inject] IReportGenerationService reportGenerationService,
+            [Inject] ReportGenerationServiceResolver reportGenerationServiceResolver,
             [Inject] ICourseAuditService courseAuditService)
         {
             try
-            {  // Index documents
+            {
+                var reportGenerationService = reportGenerationServiceResolver(Models.ProcessType.Apprenticeship);
+
+                // Index documents
                 log.LogInformation("Entered ApprenticeshipChangeFeedTrigger");
 
                 // Audit changes to documents
