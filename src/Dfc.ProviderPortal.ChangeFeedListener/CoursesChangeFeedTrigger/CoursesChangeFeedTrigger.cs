@@ -34,11 +34,14 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.CoursesChangeFeedTrigger
             )]
             IReadOnlyList<Document> documents,
             ILogger log,
-            [Inject] IReportGenerationService reportGenerationService,
+            [Inject] ReportGenerationServiceResolver reportGenerationServiceResolver,
             [Inject] ICourseAuditService courseAuditService)
         {
             try
-            {  // Index documents
+            {
+                var reportGenerationService = reportGenerationServiceResolver(ProcessType.Course);
+
+                // Index documents
                 log.LogInformation("Entered FindACourseSearchCosmosTrigger");
                 log.LogInformation($"Processing {documents.Count} documents for indexing to Azure search");
                 IEnumerable<IndexingResult> results = await courseAuditService.UploadCoursesToSearch(log, documents);
