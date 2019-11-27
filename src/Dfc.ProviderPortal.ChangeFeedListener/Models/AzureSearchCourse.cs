@@ -34,5 +34,6 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Models
         public string CostDescription { get; set; }
         public string CourseText { get; set; }
         public string CourseDescription { get; set; }
+        public string CourseName { get; set; }
     }
 }
