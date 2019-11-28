@@ -176,7 +176,8 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                                                                    CourseText = x.Course?.CourseDescription,
                                                                    UpdatedOn = x.Run?.UpdatedDate ?? x.Run?.CreatedDate,
                                                                    CourseDescription = x.Course?.CourseDescription,
-                                                                   CourseName = x.Run?.CourseName
+                                                                   CourseName = x.Run?.CourseName,
+                                                                   FlexibleStartDate = x.Run.FlexibleStartDate
                                                                };
 
                     if (batchdata.Any())
