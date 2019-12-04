@@ -8,7 +8,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Controller
     [ApiController]
     public class DocController : ControllerBase
     {
-        [Route("UpdateAllReports")]
+        [Route("UpdateCourseMigrationReports")]
         [HttpPost]
         [ProducesResponseType( StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

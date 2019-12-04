@@ -30,4 +30,44 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Models
         [Description("Migration Deleted")]
         MigrationDeleted = 1024,
     }
+
+    public enum ApprenticeshipType
+    {
+        [Description("Undefined")]
+        Undefined = 0,
+        [Description("Standard Code")]
+        StandardCode = 1,
+        [Description("Framework Code")]
+        FrameworkCode = 2
+    }
+
+    public enum ApprenticeshipLocationType
+    {
+        [Description("Undefined")]
+        Undefined = 0,
+        [Description("Classroom based")] // Venue
+        ClassroomBased = 1,
+        [Description("Employer based")] // Region
+        EmployerBased = 2,
+        [Description("Classroom based and employer based")] // Venue with added 
+        ClassroomBasedAndEmployerBased = 3
+    }
+
+    public enum LocationType
+    {
+        [Description("Undefined")]
+        Undefined = 0,
+        [Description("Venue")]
+        Venue = 1,
+        [Description("Region")]
+        Region = 2,
+        [Description("SubRegion")]
+        SubRegion = 3
+    }
+
+    public enum ProcessType
+    {
+        Course,
+        Apprenticeship
+    }
 }
