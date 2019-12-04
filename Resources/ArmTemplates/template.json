@@ -362,8 +362,39 @@
               {
                 "name": "ProviderServiceSettings__ApiKey",
                 "value": "[parameters('apimKey')]"
+              },
+              {
+                "name": "ApprenticeshipCollectionId",
+                "value": "apprenticeship"
+              },
+              {
+                "name": "ApprenticeshipLeaseCollectionName",
+                "value": "apprenticeship-lease"
+              },
+              {
+                "name": "ApprenticeshipsLeaseCollectionPrefix",
+                "value": "apprenticeshipPrefix"
+              },
+              {
+                "name": "ApprenticeshipMigrationReportLeaseCollectionName",
+                "value": "apprenticeshipReport-lease"
+              },
+              {
+                "name": "ApprenticeshipMigrationReportLeaseCollectionPrefix",
+                "value": "apprenticeshipReportPrefix"
+              },
+              {
+                "name": "ApprenticeshipMigrationReportCollectionId",
+                "value": "apprenticeshipReport"
+              },
+              {
+                "name": "ApprenticeshipDfcReportCollectionId",
+                "value": "ApprenticeshipDfcReportCollection"
+              },
+              {
+                "name": "ProviderLeaseCollectionName",
+                "value": "ukrlp-lease"
               }
-
             ]
           },
           "deployStagingSlot": {
@@ -533,6 +564,36 @@
           },
           "offerThroughput": {
               "value": 400
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "2017-05-10",
+      "name": "cosmosCollectionApprenticeshipDfcReport",
+      "type": "Microsoft.Resources/deployments",
+      "resourceGroup": "[parameters('sharedResourceGroup')]",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+            "uri": "[concat(variables('deploymentUrlBase'),'CosmosDb/cosmos-collection.json')]",
+            "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "accountName": {
+              "value": "[parameters('cosmosDbAccount')]"
+          },
+          "databaseName": {
+              "value": "[parameters('cosmosDBdatabase')]"
+          },
+          "collectionName": {
+              "value": "ApprenticeshipDfcReportCollection"
+          },
+          "offerThroughput": {
+              "value": 400
+          },
+          "partitionKey": {
+              "value": "/ProviderUKPRN"
           }
         }
       }

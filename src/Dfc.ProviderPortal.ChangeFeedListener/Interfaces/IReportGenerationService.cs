@@ -6,7 +6,6 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Interfaces
     public interface IReportGenerationService
     {
         Task UpdateReport(int ukprn);
-        Task Initialise();
         Task GenerateAllReports(ILogger log);
         Task GenerateReportForProvider(int ukprn);
     }

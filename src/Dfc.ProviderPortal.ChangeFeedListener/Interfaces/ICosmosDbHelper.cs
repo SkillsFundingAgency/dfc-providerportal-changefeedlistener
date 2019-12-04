@@ -16,5 +16,6 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Interfaces
         Task<IList<Provider>> GetOnboardedProviders(DocumentClient client, string collectionId);
         Task<Document> CreateDocumentAsync(DocumentClient client, string collectionId, object document);
         T DocumentTo<T>(Document document);
+        Task<IList<T>> GetAllDocuments<T>(DocumentClient client, string collectionId);
     }
 }
