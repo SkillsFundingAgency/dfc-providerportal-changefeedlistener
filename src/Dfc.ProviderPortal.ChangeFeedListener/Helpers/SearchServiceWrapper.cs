@@ -178,6 +178,8 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                                                                    CourseDescription = x.Course?.CourseDescription,
                                                                    CourseName = x.Run?.CourseName,
                                                                    FlexibleStartDate = x.Run.FlexibleStartDate,
+                                                                   DurationUnit = x.Run.DurationUnit,
+                                                                   DurationValue = x.Run.DurationValue,
                                                                    National = x.Run.National
                                                                };
 
