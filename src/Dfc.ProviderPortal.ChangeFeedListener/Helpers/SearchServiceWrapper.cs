@@ -177,7 +177,9 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                                                                    UpdatedOn = x.Run?.UpdatedDate ?? x.Run?.CreatedDate,
                                                                    CourseDescription = x.Course?.CourseDescription,
                                                                    CourseName = x.Run?.CourseName,
-                                                                   FlexibleStartDate = x.Run.FlexibleStartDate
+                                                                   FlexibleStartDate = x.Run.FlexibleStartDate,
+                                                                   DurationUnit = x.Run.DurationUnit,
+                                                                   DurationValue = x.Run.DurationValue
                                                                };
 
                     if (batchdata.Any())
