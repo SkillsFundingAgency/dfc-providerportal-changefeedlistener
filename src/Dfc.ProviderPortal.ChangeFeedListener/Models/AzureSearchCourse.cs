@@ -36,5 +36,6 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Models
         public string CourseDescription { get; set; }
         public string CourseName { get; set; }
         public bool? FlexibleStartDate { get; set; }
+        public bool? National { get; set; }
     }
 }
