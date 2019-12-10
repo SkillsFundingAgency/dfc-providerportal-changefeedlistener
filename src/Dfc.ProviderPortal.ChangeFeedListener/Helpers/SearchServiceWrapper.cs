@@ -167,7 +167,8 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                     }
 
                     var courseIds = courseDocuments.Select(d => d.GetPropertyValue<Guid>("id"));
-                    await DeleteStaleDocumentsForCourses(updateBatchId, courseIds);
+                    var insertedIds = batchdata.Select(d => d.id);
+                    await DeleteStaleDocumentsForCourses(updateBatchId, courseIds, insertedIds);
                 }
 
                 return Enumerable.Empty<IndexingResult>();
@@ -181,7 +182,10 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
             }
         }
 
-        private async Task DeleteStaleDocumentsForCourses(Guid thisBatchId, IEnumerable<Guid> courseIds)
+        private async Task DeleteStaleDocumentsForCourses(
+            Guid thisBatchId,
+            IEnumerable<Guid> courseIds,
+            IEnumerable<string> insertedIds)
         {
             // We need to delete any records for the courses passed in that haven't been re-indexed above
             // e.g. course run(s) or region(s) have been removed.
@@ -199,16 +203,26 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
 
             while (docs.Results.Count > 0)
             {
-                var deleteBatch = IndexBatch.Delete("id", docs.Results.Select(d => (string)d.Document.id));
-                var deleteResult = await _adminIndex.Documents.IndexAsync(deleteBatch);
+                // Azure Search is eventually consistent so we occasionally see stale results here
+                // that have actually been updated in the current batch.
+                // We need to make sure we don't delete them.
+                var toBeDeleted = docs.Results.Select(d => (string)d.Document.id)
+                    .Except(insertedIds)
+                    .ToList();
 
-                if (docs.ContinuationToken != null)
+                if (toBeDeleted.Any())
                 {
-                    docs = await _adminIndex.Documents.ContinueSearchAsync<dynamic>(docs.ContinuationToken);
-                }
-                else
-                {
-                    break;
+                    var deleteBatch = IndexBatch.Delete("id", toBeDeleted);
+                    var deleteResult = await _adminIndex.Documents.IndexAsync(deleteBatch);
+
+                    if (docs.ContinuationToken != null)
+                    {
+                        docs = await _adminIndex.Documents.ContinueSearchAsync<dynamic>(docs.ContinuationToken);
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
             }
         }
