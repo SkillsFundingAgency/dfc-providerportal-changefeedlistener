@@ -21,7 +21,6 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Models
         public string UKPRN { get; set; }
         public string ProviderName { get; set; }
         public string Region { get; set; }
-        //public string Weighting { get; set; }
         public decimal ScoreBoost { get; set; }
         public int? Status { get; set; }
         public string VenueStudyMode { get; set; }

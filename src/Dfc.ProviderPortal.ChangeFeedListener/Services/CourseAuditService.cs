@@ -47,8 +47,8 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Services
                         .SelectMany(c => c.CourseRuns)
                 );
 
-                return new SearchServiceWrapper(log, _searchServiceSettings)
-                    .UploadBatch(providers, venues, documents, out int succeeded);
+                return await new SearchServiceWrapper(log, _searchServiceSettings)
+                    .UploadBatch(providers, venues, documents);
             }
             else
             {
