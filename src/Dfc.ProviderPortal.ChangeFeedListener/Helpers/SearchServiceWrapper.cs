@@ -51,6 +51,8 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
             {
                 if (courseDocuments.Any())
                 {
+                    var updateBatchId = Guid.NewGuid();
+
                     IEnumerable<Course> courses = courseDocuments.Select(d => new Course()
                     {
                         id = d.GetPropertyValue<Guid>("id"),
@@ -145,7 +147,8 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                                                                    FlexibleStartDate = x.Run.FlexibleStartDate,
                                                                    DurationUnit = x.Run.DurationUnit,
                                                                    DurationValue = x.Run.DurationValue,
-                                                                   National = x.Run.National
+                                                                   National = x.Run.National,
+                                                                   UpdateBatchId = updateBatchId
                                                                };
 
                     if (batchdata.Any())
@@ -158,6 +161,9 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                         var succeeded = indexResult.Results.Count(r => r.Succeeded);
                         _log.LogInformation($"*** Successfully merged {succeeded} docs into Azure search index: course");
                     }
+
+                    var courseIds = courseDocuments.Select(d => d.GetPropertyValue<Guid>("id"));
+                    await DeleteStaleDocumentsForCourses(updateBatchId, courseIds);
                 }
 
                 return Enumerable.Empty<IndexingResult>();
@@ -168,6 +174,38 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                 _log.LogError(ex, string.Format("Failed to index some of the documents: {0}",
                                                 string.Join(", ", failed.Select(d => d.Key))));
                 return ex.IndexingResults;
+            }
+        }
+
+        private async Task DeleteStaleDocumentsForCourses(Guid thisBatchId, IEnumerable<Guid> courseIds)
+        {
+            // We need to delete any records for the courses passed in that haven't been re-indexed above
+            // e.g. course run(s) or region(s) have been removed.
+            //
+            // There's no delete-by-query method so we need to do a search then delete
+
+            var queryParams = new SearchParameters()
+            {
+                Filter = $"UpdateBatchId ne '{thisBatchId}'",
+                SearchMode = SearchMode.All,
+                QueryType = QueryType.Full,
+                Select = new List<string>() { "id" }
+            };
+            var docs = await _adminIndex.Documents.SearchAsync<dynamic>($"CourseId:({string.Join(" || ", courseIds)})", queryParams);
+
+            while (docs.Results.Count > 0)
+            {
+                var deleteBatch = IndexBatch.Delete("id", docs.Results.Select(d => (string)d.Document.id));
+                var deleteResult = await _adminIndex.Documents.IndexAsync(deleteBatch);
+
+                if (docs.ContinuationToken != null)
+                {
+                    docs = await _adminIndex.Documents.ContinueSearchAsync<dynamic>(docs.ContinuationToken);
+                }
+                else
+                {
+                    break;
+                }
             }
         }
     }

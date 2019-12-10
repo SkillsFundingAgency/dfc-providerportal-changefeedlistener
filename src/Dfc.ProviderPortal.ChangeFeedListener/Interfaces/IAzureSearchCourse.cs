@@ -30,5 +30,6 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Interfaces
         string CostDescription { get; set; }
         string CourseText { get; set; }
         string CourseDescription { get; set; }
+        Guid UpdateBatchId { get; set; }
     }
 }

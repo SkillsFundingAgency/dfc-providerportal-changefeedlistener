@@ -38,5 +38,6 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Models
         public DurationUnit DurationUnit { get; set; }
         public int? DurationValue { get; set; }
         public bool? National { get; set; }
+        public Guid UpdateBatchId { get; set; }
     }
 }
