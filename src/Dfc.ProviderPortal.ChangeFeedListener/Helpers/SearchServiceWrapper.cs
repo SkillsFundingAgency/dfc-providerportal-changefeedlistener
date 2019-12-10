@@ -107,6 +107,10 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                                                                on x.Course?.ProviderUKPRN equals p.UnitedKingdomProviderReferenceNumber
                                                                where (x.Run.RecordStatus != RecordStatus.Pending && (x.Run.DeliveryMode == DeliveryMode.Online || x.Venue != null || x.SubRegion != null))
                                                                let id = x.Run.DeliveryMode == DeliveryMode.WorkBased ? $"{x.Run.id}--{x.SubRegion.Id}" : x.Run.id.ToString()
+                                                               let venueLocation = x.Venue?.Latitude != null && x.Venue?.Longitude != null ?
+                                                                   GeographyPoint.Create(x.Venue.Latitude.Value, x.Venue.Longitude.Value) :
+                                                                   x.SubRegion != null ? GeographyPoint.Create(x.SubRegion.Latitude, x.SubRegion.Longitude) :
+                                                                   null
                                                                select new AzureSearchCourse()
                                                                {
                                                                    id = id,
@@ -124,7 +128,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                                                                                   x.Venue?.POSTCODE) ?? "",
                                                                    VenueAttendancePattern = ((int)x.Run.AttendancePattern).ToString(),
                                                                    VenueAttendancePatternDescription = x.Run.AttendancePattern.Description(),
-                                                                   VenueLocation = GeographyPoint.Create(x.Venue?.Latitude ?? 0, x.Venue?.Longitude ?? 0),
+                                                                   VenueLocation = venueLocation,
                                                                    UKPRN = x.Course.ProviderUKPRN.ToString(),
                                                                    ProviderName = p.ProviderName,
                                                                    Region = x.SubRegion?.SubRegionName ?? "",
