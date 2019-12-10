@@ -88,7 +88,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
 
                     // Classroom courses have an associated venue
                     IEnumerable<LINQComboClass> classroom = from Course c in courses
-                                                            from CourseRun r in c?.CourseRuns?.Where(x => x.DeliveryMode == DeliveryMode.ClassroomBased) ?? new List<CourseRun>()
+                                                            from CourseRun r in c.CourseRuns?.Where(x => x.DeliveryMode == DeliveryMode.ClassroomBased) ?? new List<CourseRun>()
                                                             from AzureSearchVenueModel v in venues.Where(x => r.VenueId == x.id)
                                                                                                   .DefaultIfEmpty()
                                                             select new LINQComboClass() { Course = c, Run = r, SubRegion = (SubRegionItemModel)null, Venue = v };
@@ -97,22 +97,21 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
 
                     // Work-based courses have regions instead
                     IEnumerable<LINQComboClass> workbased = from Course c in courses
-                                                            from CourseRun r in c?.CourseRuns?.Where(x => x.DeliveryMode == DeliveryMode.WorkBased && !x.National.GetValueOrDefault(false)) ?? new List<CourseRun>()
+                                                            from CourseRun r in c.CourseRuns?.Where(x => x.DeliveryMode == DeliveryMode.WorkBased && !x.National.GetValueOrDefault(false)) ?? new List<CourseRun>()
                                                             from SubRegionItemModel subregion in r.SubRegions ?? new List<SubRegionItemModel>()
                                                             select new LINQComboClass() { Course = c, Run = r, SubRegion = subregion, Venue = (AzureSearchVenueModel)null };
                     _log.LogInformation($"{workbased.Count()} regional work-based courses (with regions but no VenueId)");
 
                     // Except for ones with National flag set, where Subregions is null
                     IEnumerable<LINQComboClass> national =  from Course c in courses
-                                                            from CourseRun r in c?.CourseRuns?.Where(x => x.DeliveryMode == DeliveryMode.WorkBased && x.National.GetValueOrDefault(false)) ?? new List<CourseRun>()
-                                                            //from SubRegionItemModel subregion in ???
+                                                            from CourseRun r in c.CourseRuns?.Where(x => x.DeliveryMode == DeliveryMode.WorkBased && x.National.GetValueOrDefault(false)) ?? new List<CourseRun>()
                                                             select new LINQComboClass() { Course = c, Run = r, SubRegion = new SubRegionItemModel() { SubRegionName = "National" }, Venue = (AzureSearchVenueModel)null };
                     _log.LogInformation($"{national.Count()} national work-based courses (with no regions or VenueId)");
 
 
                     // Online courses have neither
                     IEnumerable<LINQComboClass> online =    from Course c in courses
-                                                            from CourseRun r in c?.CourseRuns?.Where(x => x.DeliveryMode == DeliveryMode.Online) ?? new List<CourseRun>()
+                                                            from CourseRun r in c.CourseRuns?.Where(x => x.DeliveryMode == DeliveryMode.Online) ?? new List<CourseRun>()
                                                             select new LINQComboClass() { Course = c, Run = r, SubRegion = (SubRegionItemModel)null, Venue = (AzureSearchVenueModel)null };
                     _log.LogInformation($"{online.Count()} online courses (with no region or VenueId)");
 
@@ -125,15 +124,13 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                                                                                                  .Union(online)
                                                                join AzureSearchProviderModel p in providers
                                                                on x.Course?.ProviderUKPRN equals p.UnitedKingdomProviderReferenceNumber
-                                                               where (x.Run?.RecordStatus != RecordStatus.Pending && (x.Run?.DeliveryMode == DeliveryMode.Online || x.Venue != null || x.SubRegion != null))
+                                                               where (x.Run.RecordStatus != RecordStatus.Pending && (x.Run.DeliveryMode == DeliveryMode.Online || x.Venue != null || x.SubRegion != null))
+                                                               let id = x.Run.DeliveryMode == DeliveryMode.WorkBased ? $"{x.Run.id}--{x.SubRegion.Id}" : x.Run.id.ToString()
                                                                select new AzureSearchCourse()
                                                                {
-                                                                   id = ((x.Run?.DeliveryMode == DeliveryMode.WorkBased && x.Run?.SubRegions?.Count() > 1)
-                                                                                ? Guid.NewGuid()
-                                                                                : (x.Run?.id ?? Guid.NewGuid())
-                                                                        ),
-                                                                   CourseId = x.Course?.id,
-                                                                   CourseRunId = x.Run?.id,
+                                                                   id = id,
+                                                                   CourseId = x.Course.id,
+                                                                   CourseRunId = x.Run.id,
                                                                    QualificationCourseTitle = x.Course?.QualificationCourseTitle,
                                                                    LearnAimRef = x.Course?.LearnAimRef,
                                                                    NotionalNVQLevelv2 = x.Course?.NotionalNVQLevelv2,
@@ -144,13 +141,13 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                                                                                   string.IsNullOrWhiteSpace(x.Venue?.TOWN) ? "" : x.Venue?.TOWN + ", ",
                                                                                   string.IsNullOrWhiteSpace(x.Venue?.COUNTY) ? "" : x.Venue?.COUNTY + ", ",
                                                                                   x.Venue?.POSTCODE) ?? "",
-                                                                   VenueAttendancePattern = ((int)x.Run?.AttendancePattern).ToString(),
-                                                                   VenueAttendancePatternDescription = x.Run?.AttendancePattern.Description(),
+                                                                   VenueAttendancePattern = ((int)x.Run.AttendancePattern).ToString(),
+                                                                   VenueAttendancePatternDescription = x.Run.AttendancePattern.Description(),
                                                                    VenueLocation = GeographyPoint.Create(x.Venue?.Latitude ?? 0, x.Venue?.Longitude ?? 0),
-                                                                   UKPRN = x.Course?.ProviderUKPRN.ToString(),
-                                                                   ProviderName = p?.ProviderName,
+                                                                   UKPRN = x.Course.ProviderUKPRN.ToString(),
+                                                                   ProviderName = p.ProviderName,
                                                                    Region = x.SubRegion?.SubRegionName ?? "",
-                                                                   Status = (int?)x.Run?.RecordStatus,
+                                                                   Status = (int?)x.Run.RecordStatus,
                                                                    //Weighting = "",
                                                                    ScoreBoost = (x.SubRegion == null || x.Run.National.GetValueOrDefault(false) || x.SubRegion?.Weighting == SearchResultWeightings.Low ? 1
                                                                                    : (x.SubRegion?.Weighting == SearchResultWeightings.High ? subregionBoost : regionBoost)
@@ -162,21 +159,21 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                                                                    //VenueLong = ???,
                                                                    //VenueFax = ???,
                                                                    VenueTown = x.Venue?.TOWN,
-                                                                   VenueStudyMode = ((int)x.Run?.StudyMode).ToString(),
-                                                                   VenueStudyModeDescription = x.Run?.StudyMode.Description(),
-                                                                   DeliveryMode = ((int)x.Run?.DeliveryMode).ToString(),
-                                                                   DeliveryModeDescription = x.Run?.DeliveryMode.Description(),
+                                                                   VenueStudyMode = ((int)x.Run.StudyMode).ToString(),
+                                                                   VenueStudyModeDescription = x.Run.StudyMode.Description(),
+                                                                   DeliveryMode = ((int)x.Run.DeliveryMode).ToString(),
+                                                                   DeliveryModeDescription = x.Run.DeliveryMode.Description(),
                                                                    //OpportunityId = ???,
                                                                    //SubjectCategory = ???,
                                                                    //EquipmentRequired = ???,
                                                                    //AssessmentMethod = ???,
-                                                                   Cost = (x.Run?.Cost == null ? (int?)null : Convert.ToInt32(x.Run.Cost)),
-                                                                   CostDescription = x.Run?.CostDescription,
-                                                                   StartDate = x.Run?.StartDate,
+                                                                   Cost = (x.Run.Cost == null ? (int?)null : Convert.ToInt32(x.Run.Cost)),
+                                                                   CostDescription = x.Run.CostDescription,
+                                                                   StartDate = x.Run.StartDate,
                                                                    CourseText = x.Course?.CourseDescription,
-                                                                   UpdatedOn = x.Run?.UpdatedDate ?? x.Run?.CreatedDate,
+                                                                   UpdatedOn = x.Run.UpdatedDate ?? x.Run.CreatedDate,
                                                                    CourseDescription = x.Course?.CourseDescription,
-                                                                   CourseName = x.Run?.CourseName,
+                                                                   CourseName = x.Run.CourseName,
                                                                    FlexibleStartDate = x.Run.FlexibleStartDate,
                                                                    DurationUnit = x.Run.DurationUnit,
                                                                    DurationValue = x.Run.DurationValue,
