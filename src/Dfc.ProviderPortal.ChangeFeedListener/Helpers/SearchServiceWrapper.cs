@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Dfc.ProviderPortal.ChangeFeedListener.Interfaces;
 using Dfc.ProviderPortal.ChangeFeedListener.Models;
@@ -27,15 +25,8 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
 
         private readonly ILogger _log;
         private readonly ISearchServiceSettings _settings;
-        //private readonly IProviderServiceSettings _providerServiceSettings;
-        //private readonly IVenueServiceSettings _venueServiceSettings;
-        private static SearchServiceClient _queryService;
         private static SearchServiceClient _adminService;
-        private static ISearchIndexClient _queryIndex;
         private static ISearchIndexClient _adminIndex;
-        private static ISearchIndexClient _onspdIndex;
-        private HttpClient _httpClient;
-        private readonly Uri _uri;
 
         public SearchServiceWrapper(
             ILogger log,
@@ -47,32 +38,20 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
             _log = log;
             _settings = settings;
 
-            _queryService = new SearchServiceClient(settings.SearchService, new SearchCredentials(settings.QueryKey));
             _adminService = new SearchServiceClient(settings.SearchService, new SearchCredentials(settings.AdminKey));
-            _queryIndex = _queryService?.Indexes?.GetClient(settings.Index);
             _adminIndex = _adminService?.Indexes?.GetClient(settings.Index);
-            _onspdIndex = _queryService?.Indexes?.GetClient(settings.onspdIndex);
-
-            _httpClient = new HttpClient(); 
-            _httpClient.DefaultRequestHeaders.Add("api-key", settings.QueryKey);
-            _httpClient.DefaultRequestHeaders.Add("api-version", settings.ApiVersion);
-            _httpClient.DefaultRequestHeaders.Add("indexes", settings.Index);
-            _uri = new Uri($"{settings.ApiUrl}?api-version={settings.ApiVersion}");
         }
 
-        public IEnumerable<IndexingResult> UploadBatch(
+        public async Task<IEnumerable<IndexingResult>> UploadBatch(
             IEnumerable<AzureSearchProviderModel> providers,
             IEnumerable<AzureSearchVenueModel> venues,
-            IReadOnlyList<Document> documents,
-            out int succeeded)
+            IReadOnlyList<Document> courseDocuments)
         {
             try
             {
-                succeeded = 0;
-                if (documents.Any())
+                if (courseDocuments.Any())
                 {
-
-                    IEnumerable<Course> courses = documents.Select(d => new Course()
+                    IEnumerable<Course> courses = courseDocuments.Select(d => new Course()
                     {
                         id = d.GetPropertyValue<Guid>("id"),
                         QualificationCourseTitle = d.GetPropertyValue<string>("QualificationCourseTitle"),
@@ -148,25 +127,14 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                                                                    ProviderName = p.ProviderName,
                                                                    Region = x.SubRegion?.SubRegionName ?? "",
                                                                    Status = (int?)x.Run.RecordStatus,
-                                                                   //Weighting = "",
                                                                    ScoreBoost = (x.SubRegion == null || x.Run.National.GetValueOrDefault(false) || x.SubRegion?.Weighting == SearchResultWeightings.Low ? 1
                                                                                    : (x.SubRegion?.Weighting == SearchResultWeightings.High ? subregionBoost : regionBoost)
                                                                                 ),
-                                                                   //VenueEmail = ???,
-                                                                   //VenuePhoneNo = ???,
-                                                                   //SupportFacilities = ???,
-                                                                   //VenueLat = ???,
-                                                                   //VenueLong = ???,
-                                                                   //VenueFax = ???,
                                                                    VenueTown = x.Venue?.TOWN,
                                                                    VenueStudyMode = ((int)x.Run.StudyMode).ToString(),
                                                                    VenueStudyModeDescription = x.Run.StudyMode.Description(),
                                                                    DeliveryMode = ((int)x.Run.DeliveryMode).ToString(),
                                                                    DeliveryModeDescription = x.Run.DeliveryMode.Description(),
-                                                                   //OpportunityId = ???,
-                                                                   //SubjectCategory = ???,
-                                                                   //EquipmentRequired = ???,
-                                                                   //AssessmentMethod = ???,
                                                                    Cost = (x.Run.Cost == null ? (int?)null : Convert.ToInt32(x.Run.Cost)),
                                                                    CostDescription = x.Run.CostDescription,
                                                                    StartDate = x.Run.StartDate,
@@ -185,28 +153,22 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                         IndexBatch<AzureSearchCourse> batch = IndexBatch.MergeOrUpload(batchdata);
 
                         _log.LogInformation("Merging docs to azure search index: course");
-                        Task<DocumentIndexResult> task = _adminIndex.Documents.IndexAsync(batch);
-                        task.Wait();
-                        succeeded = batchdata.Count();
+                        var indexResult = await _adminIndex.Documents.IndexAsync(batch);
+
+                        var succeeded = indexResult.Results.Count(r => r.Succeeded);
+                        _log.LogInformation($"*** Successfully merged {succeeded} docs into Azure search index: course");
                     }
-                    _log.LogInformation($"*** Successfully merged {succeeded} docs into Azure search index: course");
                 }
 
-            } catch (IndexBatchException ex) {
+                return Enumerable.Empty<IndexingResult>();
+            }
+            catch (IndexBatchException ex)
+            {
                 IEnumerable<IndexingResult> failed = ex.IndexingResults.Where(r => !r.Succeeded);
                 _log.LogError(ex, string.Format("Failed to index some of the documents: {0}",
-                                                string.Join(", ", failed)));
-                //_log.LogError(ex.ToString());
-                succeeded = ex.IndexingResults.Count(x => x.Succeeded);
-                return failed;
-
-            } catch (Exception e) {
-                throw e;
+                                                string.Join(", ", failed.Select(d => d.Key))));
+                return ex.IndexingResults;
             }
-
-            // Return empty list of failed IndexingResults
-            return new List<IndexingResult>();
         }
-
     }
 }
