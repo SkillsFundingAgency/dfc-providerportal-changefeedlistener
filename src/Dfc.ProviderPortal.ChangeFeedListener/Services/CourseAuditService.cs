@@ -45,7 +45,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Services
                 log.LogInformation("Getting provider data");
                 IEnumerable<AzureSearchProviderModel> providers = new ProviderServiceWrapper(_providerServiceSettings, new HttpClient()).GetLiveProvidersForAzureSearch();
 
-                IEnumerable<AzureSearchVenueModel> venues = GetVenues(
+                IEnumerable<AzureSearchVenueModel> venues = await GetVenues(
                     log,
                     documents.Select(d => new Course() { CourseRuns = d.GetPropertyValue<IEnumerable<CourseRun>>("CourseRuns") })
                         .SelectMany(c => c.CourseRuns)
@@ -64,7 +64,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Services
             }
         }
 
-        private IEnumerable<AzureSearchVenueModel> GetVenues(ILogger log, IEnumerable<CourseRun> runs = null)
+        private async Task<IEnumerable<AzureSearchVenueModel>> GetVenues(ILogger log, IEnumerable<CourseRun> runs = null)
         {
             IVenueServiceWrapper service = new VenueServiceWrapper(_venueServiceSettings);
             IEnumerable<CourseRun> venueruns = runs?.Where(x => x.VenueId != null);
@@ -72,14 +72,14 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Services
 
             // Get all venues to save time & RUs if there's too many to get by Id
             if (venueruns == null || venueruns.Count() > _searchServiceSettings.ThresholdVenueCount)
-                return service.GetVenues();
+                return await service.GetVenues();
             else
             {
                 List<AzureSearchVenueModel> venues = new List<AzureSearchVenueModel>();
                 foreach (CourseRun r in venueruns)
                     if (!venues.Any(x => x.id == r.VenueId.Value))
                     {
-                        AzureSearchVenueModel venue = service.GetById<AzureSearchVenueModel>(r.VenueId.Value);
+                        AzureSearchVenueModel venue = await service.GetById<AzureSearchVenueModel>(r.VenueId.Value);
                         if (venue != null)
                             venues.Add(venue);
                     }
@@ -131,7 +131,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Services
                 .ToDictionary(p => p.UnitedKingdomProviderReferenceNumber, p => p);
 
             var venueService = new VenueServiceWrapper(_venueServiceSettings);
-            var allVenues = venueService.GetVenues()
+            var allVenues = (await venueService.GetVenues())
                 .ToDictionary(v => v.id.Value, v => v);
 
             var searchServiceWrapper = new SearchServiceWrapper(log, _searchServiceSettings);

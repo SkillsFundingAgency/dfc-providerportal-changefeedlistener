@@ -20,40 +20,40 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
             _settings = settings;
         }
 
-        public T GetById<T>(Guid id)
+        public async Task<T> GetById<T>(Guid id)
         {
-            // Call service to get data
-            HttpClient client = new HttpClient();
-            client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", _settings.ApiKey);
-            var criteria = new { id };
-            StringContent content = new StringContent(JsonConvert.SerializeObject(criteria), Encoding.UTF8, "application/json");
-            Task<HttpResponseMessage> taskResponse = client.PostAsync($"{_settings.ApiUrl}GetVenueById?code={_settings.ApiKey}", content);
-            taskResponse.Wait();
-            Task<string> taskJSON = taskResponse.Result.Content.ReadAsStringAsync();
-            taskJSON.Wait();
-            string json = taskJSON.Result;
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", _settings.ApiKey);
 
-            // Return data as model object
-            return JsonConvert.DeserializeObject<T>(json);
+                var response = await client.GetAsync($"{_settings.ApiUrl}GetVenueById?id={id}");
+
+                if ((int)response.StatusCode == 404)
+                {
+                    return default(T);
+                }
+
+                response.EnsureSuccessStatusCode();
+
+                var json = await response.Content.ReadAsStringAsync();
+
+                return JsonConvert.DeserializeObject<T>(json);
+            }
         }
 
-        public IEnumerable<AzureSearchVenueModel> GetVenues()
+        public async Task<IEnumerable<AzureSearchVenueModel>> GetVenues()
         {
-            // Call service to get data
-            HttpClient client = new HttpClient();
-            client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", _settings.ApiKey);
-            var criteria = new object();
-            StringContent content = new StringContent(JsonConvert.SerializeObject(criteria), Encoding.UTF8, "application/json");
-            Task<HttpResponseMessage> taskResponse = client.PostAsync($"{_settings.ApiUrl}GetAllVenues", content);
-            taskResponse.Wait();
-            Task<string> taskJSON = taskResponse.Result.Content.ReadAsStringAsync();
-            taskJSON.Wait();
-            string json = taskJSON.Result;
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", _settings.ApiKey);
 
-            // Return data as model objects
-            if (!json.StartsWith("["))
-                json = "[" + json + "]";
-            return JsonConvert.DeserializeObject<IEnumerable<AzureSearchVenueModel>>(json);
+                var response = await client.GetAsync($"{_settings.ApiUrl}GetAllVenues");
+                response.EnsureSuccessStatusCode();
+
+                var json = await response.Content.ReadAsStringAsync();
+
+                return JsonConvert.DeserializeObject<IEnumerable<AzureSearchVenueModel>>(json);
+            }
         }
     }
 }
