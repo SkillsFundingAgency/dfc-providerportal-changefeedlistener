@@ -9,6 +9,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Interfaces
 {
     public interface ICourseAuditService
     {
+        Task RepopulateSearchIndex(ILogger log);
         Task<IEnumerable<IndexingResult>> UploadCoursesToSearch(ILogger log, IReadOnlyList<Document> documents);
         Task<CourseAudit> Audit(ILogger log, Document auditee);
     }

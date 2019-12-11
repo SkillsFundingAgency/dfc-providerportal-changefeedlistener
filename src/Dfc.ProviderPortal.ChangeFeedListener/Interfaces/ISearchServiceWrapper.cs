@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Dfc.ProviderPortal.ChangeFeedListener.Models;
 using Microsoft.Azure.Search.Models;
@@ -9,8 +10,8 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Interfaces
     public interface ISearchServiceWrapper
     {
         Task<IEnumerable<IndexingResult>> UploadBatch(
-            IEnumerable<AzureSearchProviderModel> providers,
-            IEnumerable<AzureSearchVenueModel> venues,
-            IReadOnlyList<Document> documents);
+            IDictionary<int, AzureSearchProviderModel> providers,
+            IDictionary<Guid, AzureSearchVenueModel> venues,
+            IEnumerable<Document> documents);
     }
 }
