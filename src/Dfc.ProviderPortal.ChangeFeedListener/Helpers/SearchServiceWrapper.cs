@@ -43,9 +43,9 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
         }
 
         public async Task<IEnumerable<IndexingResult>> UploadBatch(
-            IEnumerable<AzureSearchProviderModel> providers,
-            IEnumerable<AzureSearchVenueModel> venues,
-            IReadOnlyList<Document> courseDocuments)
+            IDictionary<int, AzureSearchProviderModel> providers,
+            IDictionary<Guid, AzureSearchVenueModel> venues,
+            IEnumerable<Document> courseDocuments)
         {
             try
             {
@@ -70,8 +70,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                     // Classroom courses have an associated venue
                     IEnumerable<LINQComboClass> classroom = from Course c in courses
                                                             from CourseRun r in c.CourseRuns?.Where(x => x.DeliveryMode == DeliveryMode.ClassroomBased) ?? new List<CourseRun>()
-                                                            from AzureSearchVenueModel v in venues.Where(x => r.VenueId == x.id)
-                                                                                                  .DefaultIfEmpty()
+                                                            let v = r.VenueId.HasValue && venues.ContainsKey(r.VenueId.Value) ? venues[r.VenueId.Value] : null
                                                             select new LINQComboClass() { Course = c, Run = r, SubRegion = (SubRegionItemModel)null, Venue = v };
                     _log.LogInformation($"{classroom.Count()} classroom courses (with VenueId and no regions)");
 
@@ -100,60 +99,59 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                     decimal regionBoost = _settings.RegionSearchBoost ?? 2.3M;
                     decimal subregionBoost = _settings.SubRegionSearchBoost ?? 4.5M;
 
-                    IEnumerable<AzureSearchCourse> batchdata = from LINQComboClass x in classroom.Union(workbased)
+                    IEnumerable<AzureSearchCourse> batchdata = (from LINQComboClass x in classroom.Union(workbased)
                                                                                                  .Union(national)
                                                                                                  .Union(online)
-                                                               join AzureSearchProviderModel p in providers
-                                                               on x.Course?.ProviderUKPRN equals p.UnitedKingdomProviderReferenceNumber
-                                                               where (x.Run.RecordStatus != RecordStatus.Pending && (x.Run.DeliveryMode == DeliveryMode.Online || x.Venue != null || x.SubRegion != null))
-                                                               let id = x.Run.DeliveryMode == DeliveryMode.WorkBased ? $"{x.Run.id}--{x.SubRegion.Id}" : x.Run.id.ToString()
-                                                               let venueLocation = x.Venue?.Latitude != null && x.Venue?.Longitude != null ?
-                                                                   GeographyPoint.Create(x.Venue.Latitude.Value, x.Venue.Longitude.Value) :
-                                                                   x.SubRegion != null ? GeographyPoint.Create(x.SubRegion.Latitude, x.SubRegion.Longitude) :
-                                                                   null
-                                                               select new AzureSearchCourse()
-                                                               {
-                                                                   id = id,
-                                                                   CourseId = x.Course.id,
-                                                                   CourseRunId = x.Run.id,
-                                                                   QualificationCourseTitle = x.Course?.QualificationCourseTitle,
-                                                                   LearnAimRef = x.Course?.LearnAimRef,
-                                                                   NotionalNVQLevelv2 = x.Course?.NotionalNVQLevelv2,
-                                                                   VenueName = x.Venue?.VENUE_NAME ?? "",
-                                                                   VenueAddress = string.Format("{0}{1}{2}{3}{4}",
-                                                                                  string.IsNullOrWhiteSpace(x.Venue?.ADDRESS_1) ? "" : x.Venue?.ADDRESS_1 + ", ",
-                                                                                  string.IsNullOrWhiteSpace(x.Venue?.ADDRESS_2) ? "" : x.Venue?.ADDRESS_2 + ", ",
-                                                                                  string.IsNullOrWhiteSpace(x.Venue?.TOWN) ? "" : x.Venue?.TOWN + ", ",
-                                                                                  string.IsNullOrWhiteSpace(x.Venue?.COUNTY) ? "" : x.Venue?.COUNTY + ", ",
-                                                                                  x.Venue?.POSTCODE) ?? "",
-                                                                   VenueAttendancePattern = ((int)x.Run.AttendancePattern).ToString(),
-                                                                   VenueAttendancePatternDescription = x.Run.AttendancePattern.Description(),
-                                                                   VenueLocation = venueLocation,
-                                                                   UKPRN = x.Course.ProviderUKPRN.ToString(),
-                                                                   ProviderName = p.ProviderName,
-                                                                   Region = x.SubRegion?.SubRegionName ?? "",
-                                                                   Status = (int?)x.Run.RecordStatus,
-                                                                   ScoreBoost = (x.SubRegion == null || x.Run.National.GetValueOrDefault(false) || x.SubRegion?.Weighting == SearchResultWeightings.Low ? 1
-                                                                                   : (x.SubRegion?.Weighting == SearchResultWeightings.High ? subregionBoost : regionBoost)
-                                                                                ),
-                                                                   VenueTown = x.Venue?.TOWN,
-                                                                   VenueStudyMode = ((int)x.Run.StudyMode).ToString(),
-                                                                   VenueStudyModeDescription = x.Run.StudyMode.Description(),
-                                                                   DeliveryMode = ((int)x.Run.DeliveryMode).ToString(),
-                                                                   DeliveryModeDescription = x.Run.DeliveryMode.Description(),
-                                                                   Cost = (x.Run.Cost == null ? (int?)null : Convert.ToInt32(x.Run.Cost)),
-                                                                   CostDescription = x.Run.CostDescription,
-                                                                   StartDate = x.Run.StartDate,
-                                                                   CourseText = x.Course?.CourseDescription,
-                                                                   UpdatedOn = x.Run.UpdatedDate ?? x.Run.CreatedDate,
-                                                                   CourseDescription = x.Course?.CourseDescription,
-                                                                   CourseName = x.Run.CourseName,
-                                                                   FlexibleStartDate = x.Run.FlexibleStartDate,
-                                                                   DurationUnit = x.Run.DurationUnit,
-                                                                   DurationValue = x.Run.DurationValue,
-                                                                   National = x.Run.National,
-                                                                   UpdateBatchId = updateBatchId
-                                                               };
+                                                                let p = providers[x.Course.ProviderUKPRN]
+                                                                where (x.Run.RecordStatus != RecordStatus.Pending && (x.Run.DeliveryMode == DeliveryMode.Online || x.Venue != null || x.SubRegion != null))
+                                                                let id = x.Run.DeliveryMode == DeliveryMode.WorkBased ? $"{x.Run.id}--{x.SubRegion.Id}" : x.Run.id.ToString()
+                                                                let venueLocation = x.Venue?.Latitude != null && x.Venue?.Longitude != null ?
+                                                                    GeographyPoint.Create(x.Venue.Latitude.Value, x.Venue.Longitude.Value) :
+                                                                    x.SubRegion != null ? GeographyPoint.Create(x.SubRegion.Latitude, x.SubRegion.Longitude) :
+                                                                    null
+                                                                select new AzureSearchCourse()
+                                                                {
+                                                                    id = id,
+                                                                    CourseId = x.Course.id,
+                                                                    CourseRunId = x.Run.id,
+                                                                    QualificationCourseTitle = x.Course?.QualificationCourseTitle,
+                                                                    LearnAimRef = x.Course?.LearnAimRef,
+                                                                    NotionalNVQLevelv2 = x.Course?.NotionalNVQLevelv2,
+                                                                    VenueName = x.Venue?.VENUE_NAME ?? "",
+                                                                    VenueAddress = string.Format("{0}{1}{2}{3}{4}",
+                                                                                   string.IsNullOrWhiteSpace(x.Venue?.ADDRESS_1) ? "" : x.Venue?.ADDRESS_1 + ", ",
+                                                                                   string.IsNullOrWhiteSpace(x.Venue?.ADDRESS_2) ? "" : x.Venue?.ADDRESS_2 + ", ",
+                                                                                   string.IsNullOrWhiteSpace(x.Venue?.TOWN) ? "" : x.Venue?.TOWN + ", ",
+                                                                                   string.IsNullOrWhiteSpace(x.Venue?.COUNTY) ? "" : x.Venue?.COUNTY + ", ",
+                                                                                   x.Venue?.POSTCODE) ?? "",
+                                                                    VenueAttendancePattern = ((int)x.Run.AttendancePattern).ToString(),
+                                                                    VenueAttendancePatternDescription = x.Run.AttendancePattern.Description(),
+                                                                    VenueLocation = venueLocation,
+                                                                    UKPRN = x.Course.ProviderUKPRN.ToString(),
+                                                                    ProviderName = p.ProviderName,
+                                                                    Region = x.SubRegion?.SubRegionName ?? "",
+                                                                    Status = (int?)x.Run.RecordStatus,
+                                                                    ScoreBoost = (x.SubRegion == null || x.Run.National.GetValueOrDefault(false) || x.SubRegion?.Weighting == SearchResultWeightings.Low ? 1
+                                                                                    : (x.SubRegion?.Weighting == SearchResultWeightings.High ? subregionBoost : regionBoost)
+                                                                                 ),
+                                                                    VenueTown = x.Venue?.TOWN,
+                                                                    VenueStudyMode = ((int)x.Run.StudyMode).ToString(),
+                                                                    VenueStudyModeDescription = x.Run.StudyMode.Description(),
+                                                                    DeliveryMode = ((int)x.Run.DeliveryMode).ToString(),
+                                                                    DeliveryModeDescription = x.Run.DeliveryMode.Description(),
+                                                                    Cost = (x.Run.Cost == null ? (int?)null : Convert.ToInt32(x.Run.Cost)),
+                                                                    CostDescription = x.Run.CostDescription,
+                                                                    StartDate = x.Run.StartDate,
+                                                                    CourseText = x.Course?.CourseDescription,
+                                                                    UpdatedOn = x.Run.UpdatedDate ?? x.Run.CreatedDate,
+                                                                    CourseDescription = x.Course?.CourseDescription,
+                                                                    CourseName = x.Run.CourseName,
+                                                                    FlexibleStartDate = x.Run.FlexibleStartDate,
+                                                                    DurationUnit = x.Run.DurationUnit,
+                                                                    DurationValue = x.Run.DurationValue,
+                                                                    National = x.Run.National,
+                                                                    UpdateBatchId = updateBatchId
+                                                                }).ToList();
 
                     if (batchdata.Any())
                     {
@@ -214,15 +212,15 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                 {
                     var deleteBatch = IndexBatch.Delete("id", toBeDeleted);
                     var deleteResult = await _adminIndex.Documents.IndexAsync(deleteBatch);
+                }
 
-                    if (docs.ContinuationToken != null)
-                    {
-                        docs = await _adminIndex.Documents.ContinueSearchAsync<dynamic>(docs.ContinuationToken);
-                    }
-                    else
-                    {
-                        break;
-                    }
+                if (docs.ContinuationToken != null)
+                {
+                    docs = await _adminIndex.Documents.ContinueSearchAsync<dynamic>(docs.ContinuationToken);
+                }
+                else
+                {
+                    break;
                 }
             }
         }
