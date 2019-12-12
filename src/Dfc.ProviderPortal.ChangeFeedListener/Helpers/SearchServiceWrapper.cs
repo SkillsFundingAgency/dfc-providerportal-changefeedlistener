@@ -117,7 +117,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                                                                     QualificationCourseTitle = x.Course?.QualificationCourseTitle,
                                                                     LearnAimRef = x.Course?.LearnAimRef,
                                                                     NotionalNVQLevelv2 = x.Course?.NotionalNVQLevelv2,
-                                                                    VenueName = x.Venue?.VENUE_NAME ?? "",
+                                                                    VenueName = x.Venue?.VENUE_NAME ?? x.SubRegion?.SubRegionName ?? "",
                                                                     VenueAddress = string.Format("{0}{1}{2}{3}{4}",
                                                                                    string.IsNullOrWhiteSpace(x.Venue?.ADDRESS_1) ? "" : x.Venue?.ADDRESS_1 + ", ",
                                                                                    string.IsNullOrWhiteSpace(x.Venue?.ADDRESS_2) ? "" : x.Venue?.ADDRESS_2 + ", ",
