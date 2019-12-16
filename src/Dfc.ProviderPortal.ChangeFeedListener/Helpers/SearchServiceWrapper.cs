@@ -153,6 +153,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                                                                     UpdateBatchId = updateBatchId
                                                                 }).ToList();
 
+                    IEnumerable<IndexingResult> indexed;
                     if (batchdata.Any())
                     {
                         IndexBatch<AzureSearchCourse> batch = IndexBatch.MergeOrUpload(batchdata);
@@ -162,11 +163,19 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
 
                         var succeeded = indexResult.Results.Count(r => r.Succeeded);
                         _log.LogInformation($"*** Successfully merged {succeeded} docs into Azure search index: course");
+
+                        indexed = indexResult.Results;
+                    }
+                    else
+                    {
+                        indexed = Enumerable.Empty<IndexingResult>();
                     }
 
                     var courseIds = courseDocuments.Select(d => d.GetPropertyValue<Guid>("id"));
                     var insertedIds = batchdata.Select(d => d.id);
                     await DeleteStaleDocumentsForCourses(updateBatchId, courseIds, insertedIds);
+
+                    return indexed;
                 }
 
                 return Enumerable.Empty<IndexingResult>();
