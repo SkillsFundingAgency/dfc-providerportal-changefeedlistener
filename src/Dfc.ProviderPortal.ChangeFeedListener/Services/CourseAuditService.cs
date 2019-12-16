@@ -136,6 +136,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Services
 
             var searchServiceWrapper = new SearchServiceWrapper(log, _searchServiceSettings);
 
+            var indexedCount = 0;
             using (var client = _cosmosDbHelper.GetClient())
             {
                 var collectionLink = UriFactory.CreateDocumentCollectionUri(
@@ -152,9 +153,12 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Services
                 {
                     var result = await query.ExecuteNextAsync<Document>();
 
-                    await searchServiceWrapper.UploadBatch(allProviders, allVenues, result);
+                    var indexed = await searchServiceWrapper.UploadBatch(allProviders, allVenues, result);
+                    indexedCount += indexed.Count();
                 }
             }
+
+            log.LogInformation($"Indexed {indexedCount} records.");
         }
     }
 }
