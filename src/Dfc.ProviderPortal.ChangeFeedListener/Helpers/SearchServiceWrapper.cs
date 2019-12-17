@@ -99,9 +99,19 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                     decimal regionBoost = _settings.RegionSearchBoost ?? 2.3M;
                     decimal subregionBoost = _settings.SubRegionSearchBoost ?? 4.5M;
 
-                    IEnumerable<AzureSearchCourse> batchdata = (from LINQComboClass x in classroom.Union(workbased)
-                                                                                                 .Union(national)
-                                                                                                 .Union(online)
+                    var combined = classroom.Union(workbased).Union(national).Union(online).ToList();
+
+                    var missingProvider = combined
+                        .Select(x => x.Course.ProviderUKPRN)
+                        .Where(ukprn => !providers.ContainsKey(ukprn))
+                        .ToList();
+                    if (missingProvider.Count > 0)
+                    {
+                        _log.LogWarning($"Missing providers: ${string.Join(", ", missingProvider)}.");
+                    }
+
+                    IEnumerable<AzureSearchCourse> batchdata = (from LINQComboClass x in combined
+                                                                where providers.ContainsKey(x.Course.ProviderUKPRN)
                                                                 let p = providers[x.Course.ProviderUKPRN]
                                                                 where (x.Run.RecordStatus != RecordStatus.Pending && (x.Run.DeliveryMode == DeliveryMode.Online || x.Venue != null || x.SubRegion != null))
                                                                 let id = x.Run.DeliveryMode == DeliveryMode.WorkBased ? $"{x.Run.id}--{x.SubRegion.Id}" : x.Run.id.ToString()
