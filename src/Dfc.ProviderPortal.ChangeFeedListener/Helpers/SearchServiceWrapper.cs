@@ -103,6 +103,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
 
                     var missingProvider = combined
                         .Select(x => x.Course.ProviderUKPRN)
+                        .Distinct()
                         .Where(ukprn => !providers.ContainsKey(ukprn))
                         .ToList();
                     if (missingProvider.Count > 0)
