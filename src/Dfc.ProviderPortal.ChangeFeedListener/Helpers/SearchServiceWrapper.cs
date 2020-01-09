@@ -152,7 +152,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                                                                     DeliveryModeDescription = x.Run.DeliveryMode.Description(),
                                                                     Cost = (x.Run.Cost == null ? (int?)null : Convert.ToInt32(x.Run.Cost)),
                                                                     CostDescription = x.Run.CostDescription,
-                                                                    StartDate = x.Run.StartDate,
+                                                                    StartDate = !x.Run.FlexibleStartDate ? x.Run.StartDate : null,
                                                                     CourseText = x.Course?.CourseDescription,
                                                                     UpdatedOn = x.Run.UpdatedDate ?? x.Run.CreatedDate,
                                                                     CourseDescription = x.Course?.CourseDescription,
