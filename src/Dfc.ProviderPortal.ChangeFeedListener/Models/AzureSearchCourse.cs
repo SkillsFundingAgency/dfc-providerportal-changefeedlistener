@@ -6,9 +6,9 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Models
 {
     public class AzureSearchCourse : IAzureSearchCourse
     {
-        public Guid? id { get; set; }
-        public Guid? CourseId { get; set; }
-        public Guid? CourseRunId { get; set; }
+        public string id { get; set; }
+        public Guid CourseId { get; set; }
+        public Guid CourseRunId { get; set; }
         public string QualificationCourseTitle { get; set; }
         public string LearnAimRef { get; set; }
         public string NotionalNVQLevelv2 { get; set; }
@@ -21,7 +21,6 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Models
         public string UKPRN { get; set; }
         public string ProviderName { get; set; }
         public string Region { get; set; }
-        //public string Weighting { get; set; }
         public decimal ScoreBoost { get; set; }
         public int? Status { get; set; }
         public string VenueStudyMode { get; set; }
@@ -38,5 +37,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Models
         public bool? FlexibleStartDate { get; set; }
         public DurationUnit DurationUnit { get; set; }
         public int? DurationValue { get; set; }
+        public bool? National { get; set; }
+        public Guid UpdateBatchId { get; set; }
     }
 }

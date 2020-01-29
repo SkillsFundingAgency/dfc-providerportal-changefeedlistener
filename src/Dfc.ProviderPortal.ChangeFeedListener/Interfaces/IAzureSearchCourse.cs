@@ -5,8 +5,9 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Interfaces
 {
     public interface IAzureSearchCourse
     {
-        Guid? id { get; set; }
-        Guid? CourseId { get; set; }
+        string id { get; set; }
+        Guid CourseId { get; set; }
+        Guid CourseRunId { get; set; }
         string QualificationCourseTitle { get; set; }
         string LearnAimRef { get; set; }
         string NotionalNVQLevelv2 { get; set; }
@@ -29,5 +30,6 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Interfaces
         string CostDescription { get; set; }
         string CourseText { get; set; }
         string CourseDescription { get; set; }
+        Guid UpdateBatchId { get; set; }
     }
 }
