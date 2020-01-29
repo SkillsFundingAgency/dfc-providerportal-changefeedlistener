@@ -159,7 +159,6 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                                                                     CourseName = x.Run.CourseName,
                                                                     FlexibleStartDate = x.Run.FlexibleStartDate,
                                                                     DurationUnit = x.Run.DurationUnit,
-                                                                    DurationValue = x.Run.DurationValue,
                                                                     National = x.Run.National,
                                                                     UpdateBatchId = updateBatchId
                                                                 }).ToList();
