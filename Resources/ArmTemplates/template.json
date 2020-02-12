@@ -26,34 +26,6 @@
         "description": "Connection string for the storage account to store function app files"
       }
     },
-    "ApimServiceName": {
-      "type": "string",
-      "metadata": {
-        "description": "APIM name"
-      }
-    },
-    "ApimResourceGroup": {
-      "type": "string",
-      "metadata": {
-        "description": "Resource group where the APIM is located"
-      }
-    },
-    "ApiName": {
-      "type": "string",
-      "metadata": {
-        "description": "API name"
-      }
-    },
-    "apiProductDisplayName": {
-      "type": "string"
-    },
-    "apiSuffix": {
-      "type": "string",
-      "defaultValue": "",
-      "metadata": {
-        "description": "Suffix uniquely identifying this API and all of its resource paths within APIM, defaults to apiName"
-      }
-    },
     "cosmosDbFqdn": {
       "type": "string",
       "metadata": {
@@ -399,60 +371,6 @@
           },
           "deployStagingSlot": {
             "value": false
-          }
-        }
-      }
-    },
-    {
-      "name": "ppcflApimProduct",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2017-05-10",
-      "resourceGroup": "[parameters('ApimResourceGroup')]",
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[concat(variables('deploymentUrlBase'), 'APIM/apim-product.json')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "allowAnonymousAccess": {
-            "value": false
-          },
-          "apimServiceName": {
-            "value": "[parameters('ApimServiceName')]"
-          },
-          "productDisplayName": {
-            "value": "[parameters('apiProductDisplayName')]"
-          }
-        }
-      }
-    },
-    {
-      "name": "ppcflApimApi",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2017-05-10",
-      "resourceGroup": "[parameters('ApimResourceGroup')]",
-      "dependsOn": [
-        "ppcflApimProduct"
-      ],
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[concat(variables('deploymentUrlBase'), 'APIM/apim-api.json')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "apimProductInstanceName": {
-            "value": "[reference('ppcflApimProduct').outputs.ApimProductInstanceName.value]"
-          },
-          "apimServiceName": {
-            "value": "[parameters('ApimServiceName')]"
-          },
-          "apiName": {
-            "value": "[parameters('apiName')]"
-          },
-          "apiSuffix": {
-            "value": "[parameters('apiSuffix')]"
           }
         }
       }
