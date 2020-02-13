@@ -104,22 +104,28 @@
         "description": "The prefix of the migration report chane feed (app setting)"
       }
     },
-    "apimKey": {
-      "type": "securestring",
-      "metadata": {
-        "description": "An APIM product subscription key"
-      }
-    },
     "providerApiUrl": {
       "type": "string",
       "metadata": {
         "description": "Url to the provider API"
       }
     },
+    "providerApiKey": {
+      "type": "securestring",
+      "metadata": {
+        "description": "An APIM product subscription key for the provider api"
+      }
+    },
     "venueServiceApiUrl": {
       "type": "string",
       "metadata": {
         "description": "Url to the vendues API"
+      }
+    },
+    "venueServiceApiKey": {
+      "type": "securestring",
+      "metadata": {
+        "description": "An APIM product subscription key for the venue api"
       }
     },
     "azureSearchName": {
@@ -325,7 +331,7 @@
               },
               {
                 "name": "VenueServiceSettings__ApiKey",
-                "value": "[parameters('apimKey')]"
+                "value": "[parameters('venueServiceApiKey')]"
               },
               {
                 "name": "ProviderServiceSettings__ApiUrl",
@@ -333,7 +339,7 @@
               },
               {
                 "name": "ProviderServiceSettings__ApiKey",
-                "value": "[parameters('apimKey')]"
+                "value": "[parameters('providerApiKey')]"
               },
               {
                 "name": "ApprenticeshipCollectionId",

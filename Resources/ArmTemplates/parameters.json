@@ -53,14 +53,17 @@
       "cosmosDbCoursesMigrationReportChangeFeedPrefix": {
         "value": "__cosmosDbCoursesMigrationReportChangeFeedPrefix__"
       },
-      "apimKey": {
-        "value": "__apimKey__"
-      },
       "providerApiUrl": {
         "value": "__providerApiUrl__"
       },
+      "providerApiKey": {
+        "value": "__ApimPublishCourseDirectoryKey__"
+      },
       "venueServiceApiUrl": {
         "value": "__venueServiceApiUrl__"
+      },
+      "venueServiceApiKey": {
+        "value": "__ApimPublishCourseDirectoryKey__"
       },
       "azureSearchName": {
         "value": "__azureSearchName__"
