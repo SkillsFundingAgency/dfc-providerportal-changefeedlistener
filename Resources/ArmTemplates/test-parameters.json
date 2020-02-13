@@ -53,14 +53,17 @@
     "cosmosDbCoursesMigrationReportChangeFeedPrefix": {
       "value": "CourseMigrationReportChangeFeedPrefix"
     },
-    "apimKey": {
-      "value": "not-a-real-api-management-key"
-    },
     "providerApiUrl": {
       "value": "https://api.instance/providers"
     },
+    "providerApiKey": {
+      "value": "not-a-real-api-management-key"
+    },
     "venueServiceApiUrl": {
       "value": "https://api.instance/venues"
+    },
+    "venueServiceApiKey": {
+      "value": "not-a-real-api-management-key"
     },
     "azureSearchName": {
       "value": "some-azure-search"
