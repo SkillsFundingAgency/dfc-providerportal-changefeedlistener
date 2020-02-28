@@ -99,7 +99,9 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                     decimal regionBoost = _settings.RegionSearchBoost ?? 2.3M;
                     decimal subregionBoost = _settings.SubRegionSearchBoost ?? 4.5M;
 
-                    var combined = classroom.Union(workbased).Union(national).Union(online).ToList();
+                    var combined = classroom.Union(workbased).Union(national).Union(online)
+                        .Where(c => c.Course.CourseStatus == RecordStatus.Live)
+                        .ToList();
 
                     var missingProvider = combined
                         .Select(x => x.Course.ProviderUKPRN)
