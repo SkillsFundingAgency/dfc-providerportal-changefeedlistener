@@ -146,7 +146,6 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Services
                 var query = client.CreateDocumentQuery<Course>(
                     collectionLink,
                     new FeedOptions() { EnableCrossPartitionQuery = true })
-                    .Where(c => c.CourseStatus == RecordStatus.Live)
                     .AsDocumentQuery();
 
                 while (query.HasMoreResults)
