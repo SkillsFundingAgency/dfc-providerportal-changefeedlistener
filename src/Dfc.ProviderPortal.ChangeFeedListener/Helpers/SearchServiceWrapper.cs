@@ -114,7 +114,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                     IEnumerable<AzureSearchCourse> batchdata = (from LINQComboClass x in combined
                                                                 where providers.ContainsKey(x.Course.ProviderUKPRN)
                                                                 let p = providers[x.Course.ProviderUKPRN]
-                                                                where (x.Run.RecordStatus != RecordStatus.Pending && (x.Run.DeliveryMode == DeliveryMode.Online || x.Venue != null || x.SubRegion != null))
+                                                                where (x.Run.RecordStatus == RecordStatus.Live && (x.Run.DeliveryMode == DeliveryMode.Online || x.Venue != null || x.SubRegion != null))
                                                                 let id = x.Run.DeliveryMode == DeliveryMode.WorkBased ? $"{x.Run.id}--{x.SubRegion.Id}" : x.Run.id.ToString()
                                                                 let venueLocation = !((x.Venue?.Latitude ?? 0) == 0 && (x.Venue?.Longitude ?? 0) == 0)?
                                                                     GeographyPoint.Create(x.Venue.Latitude.Value, x.Venue.Longitude.Value) :
