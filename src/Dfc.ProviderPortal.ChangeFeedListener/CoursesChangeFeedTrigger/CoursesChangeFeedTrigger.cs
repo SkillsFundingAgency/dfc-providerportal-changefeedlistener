@@ -24,6 +24,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.CoursesChangeFeedTrigger
         private const string LeaseCollectionPrefix = "%CoursesLeaseCollectionPrefix%";
 
         [FunctionName("CourseChangeFeedTrigger")]
+        [Disable]
         public async Task Run([CosmosDBTrigger(
                 DatabaseName,
                 CollectionName,

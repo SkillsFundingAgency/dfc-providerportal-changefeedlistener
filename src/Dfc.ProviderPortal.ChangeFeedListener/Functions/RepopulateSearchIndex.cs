@@ -8,6 +8,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Functions
 {
     public static class RepopulateSearchIndex
     {
+        [Disable]
         [FunctionName("RepopulateSearchIndex")]
         public static Task Run(
             [TimerTrigger("0 0 0 */1 * *")]TimerInfo timer,

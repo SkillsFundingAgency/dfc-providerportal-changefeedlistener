@@ -27,6 +27,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.CourseMigrationReportTrigger
         }
 
         [FunctionName("CourseMigrationReportChangeFeedTrigger")]
+        [Disable]
         public async Task Run([CosmosDBTrigger(
                 DatabaseName,
                 CollectionName,
