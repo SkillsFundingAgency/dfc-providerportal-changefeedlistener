@@ -4,10 +4,7 @@ using Dfc.ProviderPortal.Packages;
 using Dfc.ProviderPortal.Packages.AzureFunctions.DependencyInjection;
 using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
-using Microsoft.Build.Framework;
-using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers

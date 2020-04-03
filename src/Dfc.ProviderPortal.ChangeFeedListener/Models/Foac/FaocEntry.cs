@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Dfc.ProviderPortal.ChangeFeedListener.Models.Foac
 {

@@ -1,11 +1,8 @@
 ﻿using CsvHelper;
-using Dfc.ProviderPortal.ChangeFeedListener.Helpers;
 using Dfc.ProviderPortal.ChangeFeedListener.Interfaces;
 using Dfc.ProviderPortal.ChangeFeedListener.Models.Foac;
 using Dfc.ProviderPortal.Packages.AzureFunctions.DependencyInjection;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
@@ -69,12 +66,9 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Functions
             async Task<IList<FaocEntry>> GetFaocList()
             {
                 var blob = blobhelper.GetBlobContainer(blobContainername).GetBlockBlobReference("Courses.csv");
-
                 var ms = new MemoryStream();
                 await blob.DownloadToStreamAsync(ms);
                 ms.Seek(0L, SeekOrigin.Begin);
-
-                var results = new HashSet<int>();
                 using (var reader = new StreamReader(ms))
                 {
                     using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
