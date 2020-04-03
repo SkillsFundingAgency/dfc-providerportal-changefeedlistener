@@ -43,7 +43,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Functions
                 var isValid = validator.Validate(onlineCourse);
                 if (!isValid.IsValid)
                 {
-                    validationErrors.Add(new FaocValidationError { ID = onlineCourse.id, Error = isValid.Errors.Select(x => x.ErrorMessage).ToList() });
+                    validationErrors.Add(new FaocValidationError { ID = onlineCourse.id, Error = isValid.Errors.Select(x => $"{x.ErrorMessage}{Environment.NewLine}).ToList() });
                     continue;
                 }
                 else
