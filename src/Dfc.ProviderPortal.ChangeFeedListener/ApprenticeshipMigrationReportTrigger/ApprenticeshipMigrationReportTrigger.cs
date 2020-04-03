@@ -22,7 +22,6 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.ApprenticeshipMigrationReportTri
         private IReportGenerationService _reportGenerationService;
         
         [FunctionName("ApprenticeshipMigrationReportChangeFeedTrigger")]
-        [Disable]
         public async Task Run([CosmosDBTrigger(
                 DatabaseName,
                 CollectionName,

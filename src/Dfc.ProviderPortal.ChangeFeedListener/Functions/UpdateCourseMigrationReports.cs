@@ -15,7 +15,6 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Functions
 {
     public static class UpdateCourseMigrationReports
     {
-        [Disable]
         [FunctionName("UpdateCourseMigrationReports")]
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] HttpRequest req,

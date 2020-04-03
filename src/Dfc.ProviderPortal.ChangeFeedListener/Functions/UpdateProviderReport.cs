@@ -14,7 +14,6 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Functions
     public static class UpdateProviderReport
     {
         [FunctionName("UpdateProviderReport")]
-        [Disable]
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] HttpRequest req,
             ILogger log,
