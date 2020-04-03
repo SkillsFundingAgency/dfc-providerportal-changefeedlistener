@@ -30,17 +30,19 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Functions
             var logger = loggerFactory.CreateLogger(typeof(UpdateFaocSearch));
             var blobContainername = configuration["BlobStorageSettings:Container"];
             var blobContainer = blobhelper.GetBlobContainer(blobContainername);
+            var faocFileName = "Courses.csv";
             var faocEntries = await GetFaocList();
             var validator = new FaocValidator();
             var validationErrors = new List<FaocValidationError>();
             var validFaocEntries = new List<FaocEntry>();
+
 
             foreach (var onlineCourse in faocEntries)
             {
                 var isValid = validator.Validate(onlineCourse);
                 if (!isValid.IsValid)
                 {
-                    validationErrors.Add(new FaocValidationError { ID = onlineCourse.id, Error = isValid.Errors.Select(x => $"{x.ErrorMessage}{Environment.NewLine}).ToList() });
+                    validationErrors.Add(new FaocValidationError { ID = onlineCourse.id, Error = isValid.Errors.Select(x => $"{x.ErrorMessage}{Environment.NewLine}").ToList() });
                     continue;
                 }
                 else
@@ -55,9 +57,9 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Functions
                 logger.LogWarning($"{ validationErrors.Count } Courses Failed To Import");
 
                 if (validationErrors.Count() == 0)
-                    await blobhelper.MoveFile(blobContainer, "Courses.csv", $"ProcessedCourses/courses-{DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss")}.csv");
+                    await blobhelper.MoveFile(blobContainer, faocFileName, $"ProcessedCourses/courses-{DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss")}.csv");
                 else
-                    await blobhelper.MoveFile(blobContainer, "Courses.csv", $"Errors/courses-{DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss")}.csv");
+                    await blobhelper.MoveFile(blobContainer, faocFileName, $"Errors/courses-{DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss")}.csv");
             }
 
             var totalImported = faocEntries.Count() - validationErrors.Count();
@@ -65,7 +67,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Functions
             
             async Task<IList<FaocEntry>> GetFaocList()
             {
-                var blob = blobhelper.GetBlobContainer(blobContainername).GetBlockBlobReference("Courses.csv");
+                var blob = blobhelper.GetBlobContainer(blobContainername).GetBlockBlobReference(faocFileName);
                 var ms = new MemoryStream();
                 await blob.DownloadToStreamAsync(ms);
                 ms.Seek(0L, SeekOrigin.Begin);
