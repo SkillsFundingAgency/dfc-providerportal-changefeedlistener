@@ -55,12 +55,8 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Functions
                 var results = await searchService.UploadFaocBatch(validFaocEntries);
 
                 //delete old courses
-                var deleteResult = await searchService.DeleteStaleDocuments(validFaocEntries);
-                if(deleteResult != null)
-                {
-                    logger.LogWarning($"{ deleteResult.Results } Stale courses removed");
-                }
-
+                await searchService.DeleteStaleDocuments(validFaocEntries);
+ 
                 logger.LogWarning($"{ validationErrors.Count } Courses Failed To Import");
 
                 if (validationErrors.Count() == 0)

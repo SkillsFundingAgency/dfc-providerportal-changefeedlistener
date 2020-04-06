@@ -36,7 +36,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
             return indexResult.Results;
         }
 
-        public async Task<DocumentIndexResult> DeleteStaleDocuments(IEnumerable<FaocEntry> documents)
+        public async Task DeleteStaleDocuments(IEnumerable<FaocEntry> documents)
         {
             var queryParams = new SearchParameters()
             {
@@ -67,9 +67,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
             {
                 var deleteBatch = IndexBatch.Delete("id", toBeDeleted);
                 var deleteResult = await _adminIndex.Documents.IndexAsync(deleteBatch);
-                return deleteResult;
             }
-            return null;
         }
     }
 }
