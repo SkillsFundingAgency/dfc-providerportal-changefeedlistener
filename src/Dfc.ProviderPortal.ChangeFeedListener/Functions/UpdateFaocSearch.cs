@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
+using System.IO; 
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -52,7 +52,14 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Functions
             if (validFaocEntries.Count() > 0)
             {
                 //upload coureses
-                var results = searchService.UploadFaocBatch(validFaocEntries);
+                var results = await searchService.UploadFaocBatch(validFaocEntries);
+
+                //delete old courses
+                var deleteResult = await searchService.DeleteStaleDocuments(validFaocEntries);
+                if(deleteResult != null)
+                {
+                    logger.LogWarning($"{ deleteResult.Results } Stale courses removed");
+                }
 
                 logger.LogWarning($"{ validationErrors.Count } Courses Failed To Import");
 

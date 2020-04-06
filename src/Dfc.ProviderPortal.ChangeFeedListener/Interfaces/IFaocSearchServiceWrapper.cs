@@ -8,5 +8,6 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Interfaces
     public interface IFaocSearchServiceWrapper
     {
         Task<IEnumerable<IndexingResult>> UploadFaocBatch(IEnumerable<FaocEntry> documents);
+        Task<DocumentIndexResult> DeleteStaleDocuments(IEnumerable<FaocEntry> documents);
     }
 }

@@ -4,8 +4,10 @@ using Dfc.ProviderPortal.Packages;
 using Dfc.ProviderPortal.Packages.AzureFunctions.DependencyInjection;
 using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
 {
@@ -28,12 +30,47 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
 
         public async Task<IEnumerable<IndexingResult>> UploadFaocBatch(IEnumerable<FaocEntry> documents)
         {
-            _adminService = new SearchServiceClient(_settings.SearchService, new SearchCredentials(_settings.AdminKey));
-            _adminIndex = _adminService?.Indexes?.GetClient(_settings.Index);
-
             var batch = IndexBatch.MergeOrUpload(documents);
             var indexResult = await _adminIndex.Documents.IndexAsync(batch);
+
             return indexResult.Results;
+        }
+
+        public async Task<DocumentIndexResult> DeleteStaleDocuments(IEnumerable<FaocEntry> documents)
+        {
+            var queryParams = new SearchParameters()
+            {
+                SearchMode = SearchMode.All,
+                QueryType = QueryType.Full,
+                Select = new List<string>() { "id" }
+            };
+
+            var docs = await _adminIndex.Documents.SearchAsync<dynamic>(null, queryParams);
+            var toBeDeleted = new List<string>();
+
+            while (docs.Results.Count > 0)
+            {
+                var results = docs.Results.Select(d => (string)d.Document.id);
+                toBeDeleted.AddRange(results.Where(p => !documents.ToList().Any(p2 => p2.id == p)));
+                if (docs.ContinuationToken != null)
+                {
+                    docs = await _adminIndex.Documents.ContinueSearchAsync<dynamic>(docs.ContinuationToken);
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            // delete all other online courses that are not in documents
+            if (toBeDeleted.Count > 0)
+            {
+                var deleteBatch = IndexBatch.Delete("id", toBeDeleted);
+                var deleteResult = await _adminIndex.Documents.IndexAsync(deleteBatch);
+                return deleteResult;
+            }
+            return null;
         }
     }
 }
+
