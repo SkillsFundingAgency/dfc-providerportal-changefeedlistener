@@ -157,6 +157,12 @@
       "metadata": {
         "description": "The name of the onspd index in Azure Search"
       }
+    },
+      "faocSearchIndex": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the faoc index in Azure Search"
+      }
     }
   },
   "variables": {
@@ -282,8 +288,16 @@
                 "value": "[parameters('azureSearchName')]"
               },
               {
+                "name": "FaocSearchServiceSettings__SearchService",
+                "value": "[parameters('azureSearchName')]"
+              },
+              {
                 "name": "SearchServiceSettings__ApiUrl",
                 "value": "[concat('https://', parameters('azureSearchName'), '.search.windows.net/indexes/', parameters('courseSearchIndex'), '/docs/search')]"
+              },
+              {
+                "name": "FaocSearchServiceSettings__ApiUrl",
+                "value": "[concat('https://', parameters('azureSearchName'), '.search.windows.net/indexes/', parameters('faocSearchIndex'), '/docs/search')]"
               },
               {
                 "name": "SearchServiceSettings__ApiVersion",
@@ -298,12 +312,20 @@
                 "value": "[parameters('azureSearchAdminKey')]"
               },
               {
+                "name": "FaocSearchServiceSettings__AdminKey",
+                "value": "[parameters('azureSearchAdminKey')]"
+              },
+              {
                 "name": "SearchServiceSettings__Index",
                 "value": "[parameters('courseSearchIndex')]"
               },
               {
                 "name": "SearchServiceSettings__onspdIndex",
                 "value": "[parameters('onspdSearchIndex')]"
+              },
+              {
+                "name": "FaocSearchServiceSettings__Index",
+                "value": "[parameters('faocSearchIndex')]"
               },
               {
                 "name": "SearchServiceSettings__DefaultTop",
@@ -372,6 +394,14 @@
               {
                 "name": "ProviderLeaseCollectionName",
                 "value": "ukrlp-lease"
+              },
+              {
+                "name": "BlobStorageSettings__Container",
+                "value": "faoc-flies"
+              },
+              {
+                "name": "BlobStorageSettings__ConnectionString",
+                "value": "[parameters('storageConnectionString')]"
               }
             ]
           },
