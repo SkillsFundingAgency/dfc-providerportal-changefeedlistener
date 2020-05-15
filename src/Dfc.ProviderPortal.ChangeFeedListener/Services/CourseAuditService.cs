@@ -143,6 +143,8 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Services
                     _cosmosDbSettings.DatabaseId,
                     _settings.CoursesCollectionId);
 
+                // N.B. We deliberately don't filter out non-live courses here;
+                // UploadBatch needs to be passed those documents so it can remove them from the index
                 var query = client.CreateDocumentQuery<Course>(
                     collectionLink,
                     new FeedOptions() { EnableCrossPartitionQuery = true })
