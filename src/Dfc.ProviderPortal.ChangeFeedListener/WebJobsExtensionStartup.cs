@@ -33,6 +33,13 @@ namespace Dfc.ProviderPortal.ChangeFeedListener
 
             BuildCosmosDbSettings(builder.Services, configuration);
 
+            var blobStorageSettings = new BlobStorageSettings();
+            configuration.Bind("BlobStorageSettings", blobStorageSettings);
+            builder.Services.AddSingleton<IBlobStorageSettings>(blobStorageSettings);
+            var ifaocSearchSettings = new FaocSearchServiceSettings();
+            configuration.Bind("FaocSearchServiceSettings", ifaocSearchSettings);
+            builder.Services.AddSingleton<IFaocSearchServiceSettings>(ifaocSearchSettings);
+
             builder.Services.AddSingleton<IConfiguration>(configuration);          
             //builder.Services.Configure<CosmosDbCollectionSettings>(configuration.GetSection(nameof(CosmosDbCollectionSettings)));
             builder.Services.Configure<SearchServiceSettings>(configuration.GetSection(nameof(SearchServiceSettings)));
@@ -42,8 +49,10 @@ namespace Dfc.ProviderPortal.ChangeFeedListener
             builder.Services.AddTransient<ICourseAuditService, CourseAuditService>();
             builder.Services.AddTransient<ICourseArchiveService, CourseArchiveService>();
             builder.Services.AddTransient<ISearchServiceWrapper, SearchServiceWrapper>();
+            builder.Services.AddTransient<IFaocSearchServiceWrapper, FaocSearchServiceWrapper>();
             builder.Services.AddTransient<IVenueServiceWrapper, VenueServiceWrapper>();
             builder.Services.AddTransient<IProviderServiceWrapper, ProviderServiceWrapper>();
+            builder.Services.AddTransient<IBlobStorageHelper, BlobStorageHelper>();
             builder.Services.AddTransient((provider) => new HttpClient());
             ReportGenerationResolver(builder.Services);
 
@@ -73,6 +82,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener
 
             services.AddSingleton<CosmosDbSettings>(cosmosSettings);
             services.AddSingleton<CosmosDbCollectionSettings>(cosmosCollectionSettings);
+
         }
 
         private void ReportGenerationResolver(IServiceCollection services)
