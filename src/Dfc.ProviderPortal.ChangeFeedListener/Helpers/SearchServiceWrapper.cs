@@ -185,6 +185,11 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                     var insertedIds = batchdata.Select(d => d.id);
                     await DeleteStaleDocumentsForCourses(updateBatchId, courseIds, insertedIds);
 
+                    var nonLiveCourseIds = courseDocuments
+                        .Where(d => d.GetPropertyValue<int>("CourseStatus") != 1)
+                        .Select(d => d.GetPropertyValue<Guid>("id"));
+                    await DeleteDocumentsForCourses(nonLiveCourseIds);
+
                     return indexed;
                 }
 
@@ -196,6 +201,34 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                 _log.LogError(ex, string.Format("Failed to index some of the documents: {0}",
                                                 string.Join(", ", failed.Select(d => d.Key))));
                 return ex.IndexingResults;
+            }
+        }
+
+        private async Task DeleteDocumentsForCourses(IEnumerable<Guid> courseIds)
+        {
+            var queryParams = new SearchParameters()
+            {
+                SearchMode = SearchMode.All,
+                QueryType = QueryType.Full,
+                Select = new List<string>() { "id" }
+            };
+            var docs = await _adminIndex.Documents.SearchAsync<dynamic>($"CourseId:({string.Join(" || ", courseIds)})", queryParams);
+
+            while (docs.Results.Count > 0)
+            {
+                var toBeDeleted = docs.Results.Select(d => (string)d.Document.id).ToList();
+
+                var deleteBatch = IndexBatch.Delete("id", toBeDeleted);
+                var deleteResult = await _adminIndex.Documents.IndexAsync(deleteBatch);
+
+                if (docs.ContinuationToken != null)
+                {
+                    docs = await _adminIndex.Documents.ContinueSearchAsync<dynamic>(docs.ContinuationToken);
+                }
+                else
+                {
+                    break;
+                }
             }
         }
 
