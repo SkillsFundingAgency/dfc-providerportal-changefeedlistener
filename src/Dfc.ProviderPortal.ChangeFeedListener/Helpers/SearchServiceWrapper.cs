@@ -185,10 +185,10 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                     var insertedIds = batchdata.Select(d => d.id);
                     await DeleteStaleDocumentsForCourses(updateBatchId, courseIds, insertedIds);
 
-                    var nonLiveCourseIds = courseDocuments
-                        .Where(d => d.GetPropertyValue<int>("CourseStatus") != 1)
+                    var coursesWithNoLiveCourseRuns = courseDocuments
+                        .Where(d => (d.GetPropertyValue<int>("CourseStatus") & 1) == 0)
                         .Select(d => d.GetPropertyValue<Guid>("id"));
-                    await DeleteDocumentsForCourses(nonLiveCourseIds);
+                    await DeleteDocumentsForCourses(coursesWithNoLiveCourseRuns);
 
                     return indexed;
                 }
