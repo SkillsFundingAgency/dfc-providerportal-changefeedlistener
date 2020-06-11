@@ -79,6 +79,9 @@
     },
     "onspdSearchIndex": {
       "value": "onspd-index-name"
+    },
+    "faocSearchIndex": {
+      "value": "faoc-index-name"
     }
   }
 }
