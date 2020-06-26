@@ -249,30 +249,42 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                 QueryType = QueryType.Full,
                 Select = new List<string>() { "id" }
             };
-            var docs = await _adminIndex.Documents.SearchAsync<dynamic>($"CourseId:({string.Join(" || ", courseIds)})", queryParams);
 
-            while (docs.Results.Count > 0)
+            var courseIdList = courseIds.ToList();
+            var index = 0;
+            var chunkSize = 3000;  // Max filters per query supported by Azure Search
+
+            while (index < courseIdList.Count)
             {
-                // Azure Search is eventually consistent so we occasionally see stale results here
-                // that have actually been updated in the current batch.
-                // We need to make sure we don't delete them.
-                var toBeDeleted = docs.Results.Select(d => (string)d.Document.id)
-                    .Except(insertedIds)
-                    .ToList();
+                var chunkIds = courseIdList.Skip(index).Take(chunkSize).ToList();
+                index += chunkIds.Count;
 
-                if (toBeDeleted.Any())
-                {
-                    var deleteBatch = IndexBatch.Delete("id", toBeDeleted);
-                    var deleteResult = await _adminIndex.Documents.IndexAsync(deleteBatch);
-                }
+                var docs = await _adminIndex.Documents.SearchAsync<dynamic>(
+                    $"CourseId:({string.Join(" || ", chunkIds)})", queryParams);
 
-                if (docs.ContinuationToken != null)
+                while (docs.Results.Count > 0)
                 {
-                    docs = await _adminIndex.Documents.ContinueSearchAsync<dynamic>(docs.ContinuationToken);
-                }
-                else
-                {
-                    break;
+                    // Azure Search is eventually consistent so we occasionally see stale results here
+                    // that have actually been updated in the current batch.
+                    // We need to make sure we don't delete them.
+                    var toBeDeleted = docs.Results.Select(d => (string)d.Document.id)
+                        .Except(insertedIds)
+                        .ToList();
+
+                    if (toBeDeleted.Any())
+                    {
+                        var deleteBatch = IndexBatch.Delete("id", toBeDeleted);
+                        var deleteResult = await _adminIndex.Documents.IndexAsync(deleteBatch);
+                    }
+
+                    if (docs.ContinuationToken != null)
+                    {
+                        docs = await _adminIndex.Documents.ContinueSearchAsync<dynamic>(docs.ContinuationToken);
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
             }
         }
