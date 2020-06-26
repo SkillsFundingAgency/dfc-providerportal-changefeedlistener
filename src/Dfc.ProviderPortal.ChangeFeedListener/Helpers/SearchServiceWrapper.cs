@@ -206,6 +206,11 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
 
         private async Task DeleteDocumentsForCourses(IEnumerable<Guid> courseIds)
         {
+            if (!courseIds.Any())
+            {
+                return;
+            }
+
             var queryParams = new SearchParameters()
             {
                 SearchMode = SearchMode.All,
