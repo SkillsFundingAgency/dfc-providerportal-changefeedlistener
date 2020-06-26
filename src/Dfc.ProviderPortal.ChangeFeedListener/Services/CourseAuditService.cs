@@ -128,7 +128,8 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Services
         {
             var allProviders = new ProviderServiceWrapper(_providerServiceSettings, new HttpClient())
                 .GetLiveProvidersForAzureSearch()
-                .ToDictionary(p => p.UnitedKingdomProviderReferenceNumber, p => p);
+                .GroupBy(p => p.UnitedKingdomProviderReferenceNumber)
+                .ToDictionary(g => g.Key, g => g.First());
 
             var venueService = new VenueServiceWrapper(_venueServiceSettings);
             var allVenues = (await venueService.GetVenues())
