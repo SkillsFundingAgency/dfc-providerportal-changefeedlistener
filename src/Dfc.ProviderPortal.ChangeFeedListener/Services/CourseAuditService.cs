@@ -53,7 +53,9 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Services
 
                 return await new SearchServiceWrapper(log, _searchServiceSettings)
                     .UploadBatch(
-                        providers.ToDictionary(p => p.UnitedKingdomProviderReferenceNumber, p => p),
+                        providers
+                            .GroupBy(g => g.UnitedKingdomProviderReferenceNumber, g => g)
+                            .ToDictionary(p => p.Key, p => p.First()),
                         venues.ToDictionary(v => v.id.Value, v => v),
                         documents);
             }
