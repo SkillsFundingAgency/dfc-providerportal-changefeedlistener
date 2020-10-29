@@ -24,8 +24,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Models
     {
         Undefined = 0,
         Fe = 1,
-        Apprenticeship = 2,
-        Both = Fe | Apprenticeship
+        Apprenticeship = 2
     }
 }
 
