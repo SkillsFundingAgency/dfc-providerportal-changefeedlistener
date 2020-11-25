@@ -44,7 +44,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.CoursesChangeFeedTrigger
                 // Index documents
                 log.LogInformation("Entered FindACourseSearchCosmosTrigger");
                 log.LogInformation($"Processing {documents.Count} documents for indexing to Azure search");
-                IEnumerable<IndexingResult> results = await courseAuditService.UploadCoursesToSearch(log, documents);
+                await courseAuditService.UploadCoursesToSearch(log, documents);
 
                 // Audit changes to documents
                 CourseAudit ca = null;
