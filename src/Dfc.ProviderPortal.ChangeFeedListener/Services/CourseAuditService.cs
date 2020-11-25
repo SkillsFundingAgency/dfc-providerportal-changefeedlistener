@@ -37,33 +37,30 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Services
             _cosmosDbSettings = cosmosDbSettings;
        }
 
-       public async Task<IEnumerable<IndexingResult>> UploadCoursesToSearch(ILogger log, IReadOnlyList<Document> documents)
+       public async Task UploadCoursesToSearch(ILogger log, IReadOnlyList<Document> documents)
         {
-            if (documents.Any())
+            if (documents.Count == 0)
             {
-
-                log.LogInformation("Getting provider data");
-                IEnumerable<AzureSearchProviderModel> providers = new ProviderServiceWrapper(_providerServiceSettings, new HttpClient()).GetLiveProvidersForAzureSearch();
-
-                IEnumerable<AzureSearchVenueModel> venues = await GetVenues(
-                    log,
-                    documents.Select(d => new Course() { CourseRuns = d.GetPropertyValue<IEnumerable<CourseRun>>("CourseRuns") })
-                        .SelectMany(c => c.CourseRuns)
-                );
-
-                return await new SearchServiceWrapper(log, _searchServiceSettings)
-                    .UploadBatch(
-                        providers
-                            .GroupBy(g => g.UnitedKingdomProviderReferenceNumber, g => g)
-                            .ToDictionary(p => p.Key, p => p.First()),
-                        venues.ToDictionary(v => v.id.Value, v => v),
-                        documents);
+                return;
             }
-            else
-            {
-                // Return empty list of failed IndexingResults
-                return new List<IndexingResult>();
-            }
+
+            log.LogInformation("Getting provider data");
+            IEnumerable<AzureSearchProviderModel> providers = new ProviderServiceWrapper(_providerServiceSettings, new HttpClient()).GetLiveProvidersForAzureSearch();
+
+            IEnumerable<AzureSearchVenueModel> venues = await GetVenues(
+                log,
+                documents.Select(d => new Course() { CourseRuns = d.GetPropertyValue<IEnumerable<CourseRun>>("CourseRuns") })
+                    .SelectMany(c => c.CourseRuns)
+            );
+
+            await new SearchServiceWrapper(log, _searchServiceSettings)
+                .UploadBatch(
+                    updateBatchId: Guid.NewGuid(),
+					providers
+                        .GroupBy(g => g.UnitedKingdomProviderReferenceNumber, g => g)
+                        .ToDictionary(p => p.Key, p => p.First()),
+                    venues.ToDictionary(v => v.id.Value, v => v),
+                    documents);
         }
 
         private async Task<IEnumerable<AzureSearchVenueModel>> GetVenues(ILogger log, IEnumerable<CourseRun> runs = null)
@@ -126,7 +123,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Services
             }
         }
 
-        public async Task RepopulateSearchIndex(ILogger log)
+        public async Task RepopulateSearchIndex(ILogger log, bool deleteZombies)
         {
             var allProviders = new ProviderServiceWrapper(_providerServiceSettings, new HttpClient())
                 .GetLiveProvidersForAzureSearch()
@@ -138,6 +135,8 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Services
                 .ToDictionary(v => v.id.Value, v => v);
 
             var searchServiceWrapper = new SearchServiceWrapper(log, _searchServiceSettings);
+
+            var updateBatchId = Guid.NewGuid();
 
             var indexedCount = 0;
             using (var client = _cosmosDbHelper.GetClient())
@@ -153,12 +152,23 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Services
                     new FeedOptions() { EnableCrossPartitionQuery = true })
                     .AsDocumentQuery();
 
+                var indexedIds = new List<string>();
+
                 while (query.HasMoreResults)
                 {
                     var result = await query.ExecuteNextAsync<Document>();
 
-                    var indexed = await searchServiceWrapper.UploadBatch(allProviders, allVenues, result);
-                    indexedCount += indexed.Count();
+                    var indexed = await searchServiceWrapper.UploadBatch(updateBatchId, allProviders, allVenues, result);
+                    indexedIds.AddRange(indexed);
+                    indexedCount += indexed.Count;
+                }
+
+                if (deleteZombies)
+                {
+                    // Any records that haven't just been updated are zombies - go forth and reap
+                    await searchServiceWrapper.RemoveSearchRecordsNotUpdatedInBatch(
+                        updateBatchId,
+                        indexedIds);
                 }
             }
 

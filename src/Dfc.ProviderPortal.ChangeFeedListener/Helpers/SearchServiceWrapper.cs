@@ -42,7 +42,8 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
             _adminIndex = _adminService?.Indexes?.GetClient(settings.Index);
         }
 
-        public async Task<IEnumerable<IndexingResult>> UploadBatch(
+        public async Task<IReadOnlyList<string>> UploadBatch(
+            Guid updateBatchId,
             IDictionary<int, AzureSearchProviderModel> providers,
             IDictionary<Guid, AzureSearchVenueModel> venues,
             IEnumerable<Document> courseDocuments)
@@ -51,8 +52,6 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
             {
                 if (courseDocuments.Any())
                 {
-                    var updateBatchId = Guid.NewGuid();
-
                     IEnumerable<Course> courses = courseDocuments.Select(d => new Course()
                     {
                         id = d.GetPropertyValue<Guid>("id"),
@@ -163,7 +162,7 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                                                                     UpdateBatchId = updateBatchId
                                                                 }).ToList();
 
-                    IEnumerable<IndexingResult> indexed;
+                    IReadOnlyList<string> indexedIds;
                     if (batchdata.Any())
                     {
                         IndexBatch<AzureSearchCourse> batch = IndexBatch.MergeOrUpload(batchdata);
@@ -174,11 +173,11 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                         var succeeded = indexResult.Results.Count(r => r.Succeeded);
                         _log.LogInformation($"*** Successfully merged {succeeded} docs into Azure search index: course");
 
-                        indexed = indexResult.Results;
+                        indexedIds = batchdata.Select(c => c.id).ToArray();
                     }
                     else
                     {
-                        indexed = Enumerable.Empty<IndexingResult>();
+                        indexedIds = Array.Empty<string>();
                     }
 
                     var courseIds = courseDocuments.Select(d => d.GetPropertyValue<Guid>("id"));
@@ -190,17 +189,19 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                         .Select(d => d.GetPropertyValue<Guid>("id"));
                     await DeleteDocumentsForCourses(coursesWithNoLiveCourseRuns);
 
-                    return indexed;
+                    return indexedIds;
                 }
-
-                return Enumerable.Empty<IndexingResult>();
+                else
+                {
+                    return Array.Empty<string>();
+                }
             }
             catch (IndexBatchException ex)
             {
                 IEnumerable<IndexingResult> failed = ex.IndexingResults.Where(r => !r.Succeeded);
                 _log.LogError(ex, string.Format("Failed to index some of the documents: {0}",
                                                 string.Join(", ", failed.Select(d => d.Key))));
-                return ex.IndexingResults;
+                throw;
             }
         }
 
@@ -290,6 +291,48 @@ namespace Dfc.ProviderPortal.ChangeFeedListener.Helpers
                     {
                         break;
                     }
+                }
+            }
+        }
+
+        public async Task RemoveSearchRecordsNotUpdatedInBatch(
+            Guid updateBatchId,
+            IReadOnlyCollection<string> indexedIds)
+        {
+            // There's no delete-by-query method so we need to do a search then delete
+
+            var queryParams = new SearchParameters()
+            {
+                Filter = $"UpdateBatchId ne '{updateBatchId}'",
+                SearchMode = SearchMode.All,
+                QueryType = QueryType.Full,
+                Select = new List<string>() { "id" }
+            };
+
+            var docs = await _adminIndex.Documents.SearchAsync<dynamic>($"*", queryParams);
+
+            while (docs.Results.Count > 0)
+            {
+                // Azure Search is eventually consistent so we occasionally see stale results here
+                // that have actually been updated in the current batch.
+                // We need to make sure we don't delete them.
+                var toBeDeleted = docs.Results.Select(d => (string)d.Document.id)
+                    .Except(indexedIds)
+                    .ToList();
+
+                if (toBeDeleted.Any())
+                {
+                    var deleteBatch = IndexBatch.Delete("id", toBeDeleted);
+                    var deleteResult = await _adminIndex.Documents.IndexAsync(deleteBatch);
+                }
+
+                if (docs.ContinuationToken != null)
+                {
+                    docs = await _adminIndex.Documents.ContinueSearchAsync<dynamic>(docs.ContinuationToken);
+                }
+                else
+                {
+                    break;
                 }
             }
         }
