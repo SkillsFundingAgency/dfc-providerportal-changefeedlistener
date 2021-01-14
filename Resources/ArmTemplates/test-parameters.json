@@ -82,6 +82,9 @@
     },
     "faocSearchIndex": {
       "value": "faoc-index-name"
+    },
+    "providerPortalApplicationInsights":{
+      "value": "dfc-dev-prov-as-ai"
     }
   }
 }

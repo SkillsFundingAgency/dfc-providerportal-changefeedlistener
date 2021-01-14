@@ -82,6 +82,9 @@
       },
       "faocSearchIndex":{
         "value": "__faocSearchIndex__"
+      },
+      "providerPortalApplicationInsights": {
+        "value": "__providerportalApplicationInsights__"
       }
     }
   }
